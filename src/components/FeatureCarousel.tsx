@@ -2,32 +2,35 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
-const slides = [
-    {
-        id: 1,
-        title: "Global Academic Reputation Survey 2026",
-        subtitle: "Masa Pengisian THE Global Academic Reputation Survey 2026 telah dimulai!",
-        color: "from-blue-600 to-indigo-600",
-        image: "https://unsplash.com/photos/a-blurry-red-background-with-a-white-border-2gibGPmduPA" // Using a relevant placeholder or just a solid color if image fails
-    },
-    {
-        id: 2,
-        title: "Welcome to New Semester 2026",
-        subtitle: "Check your new schedule and academic status.",
-        color: "from-primary to-emerald-500",
-        image: ""
-    },
-    {
-        id: 3,
-        title: "Library Services Update",
-        subtitle: "New digital collection available 24/7.",
-        color: "from-orange-500 to-red-500",
-        image: ""
-    }
-];
+import { useAdmin } from '../context/AdminContext';
 
 const FeatureCarousel = () => {
+    const { siteConfig } = useAdmin();
     const [current, setCurrent] = useState(0);
+
+    const slides = [
+        {
+            id: 1,
+            title: siteConfig.bannerTitle,
+            subtitle: siteConfig.bannerSubtitle,
+            color: "from-blue-600 to-indigo-600",
+            image: siteConfig.bannerImage
+        },
+        {
+            id: 2,
+            title: "Welcome to New Semester 2026",
+            subtitle: "Check your new schedule and academic status.",
+            color: "from-primary to-emerald-500",
+            image: ""
+        },
+        {
+            id: 3,
+            title: "Library Services Update",
+            subtitle: "New digital collection available 24/7.",
+            color: "from-orange-500 to-red-500",
+            image: ""
+        }
+    ];
 
     useEffect(() => {
         const timer = setInterval(() => {

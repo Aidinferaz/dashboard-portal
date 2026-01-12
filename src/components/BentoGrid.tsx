@@ -10,7 +10,7 @@ type Service = {
     description: string;
     icon: string;
     color: string;
-    link?: string;
+    link: string;
 };
 
 // Dummy Data
@@ -39,7 +39,7 @@ const ServiceCard = ({ service, index }: { service: Service; index: number }) =>
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             {...linkProps}
-            className="group relative bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden block"
+            className="group relative bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden block"
         >
             {/* Shimmer Effect */}
             <div className="absolute inset-0 translate-x-[-100%] group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/50 to-transparent z-10 pointer-events-none" />
@@ -77,13 +77,13 @@ const BentoGrid = () => {
             </div>
 
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                     {[1, 2, 3, 4].map(i => (
                         <div key={i} className="h-48 bg-white/60 rounded-3xl animate-pulse" />
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                     {services.map((service, idx) => (
                         <ServiceCard key={service.id} service={service} index={idx} />
                     ))}

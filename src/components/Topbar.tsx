@@ -1,9 +1,21 @@
-import { Bell, Search, Globe } from 'lucide-react';
+import { Bell, Search, Globe, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const Topbar = () => {
+interface TopbarProps {
+    onMenuClick?: () => void;
+}
+
+const Topbar = ({ onMenuClick }: TopbarProps) => {
     return (
-        <div className="h-20 w-full flex items-center justify-between px-8 backdrop-blur-md bg-white/70 sticky top-0 z-40 border-b border-white/20 shadow-sm">
+        <div className="h-20 w-full flex items-center justify-between px-4 md:px-8 backdrop-blur-md bg-white/70 sticky top-0 z-40 border-b border-white/20 shadow-sm">
+            {/* Mobile Menu Button */}
+            <button
+                onClick={onMenuClick}
+                className="md:hidden p-2 mr-2 text-slate-500 hover:bg-slate-100 rounded-full transition-colors"
+                aria-label="Open Menu"
+            >
+                <Menu size={24} />
+            </button>
             {/* Search Bar - Optional addition for UX */}
             <div className="w-96 relative hidden md:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />

@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldAlert, CheckCircle } from 'lucide-react';
+import { useAdmin } from '../context/AdminContext';
 
 export default function CampaignPopup() {
+    const { siteConfig } = useAdmin();
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        // Trigger popup on mount (page load)
-        const timer = setTimeout(() => setIsOpen(true), 1000); // Small delay for effect
-        return () => clearTimeout(timer);
-    }, []);
+        // Trigger popup on mount (page load) if active
+        if (siteConfig.popupActive) {
+            const timer = setTimeout(() => setIsOpen(true), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [siteConfig.popupActive]);
 
     const closePopup = () => setIsOpen(false);
 
@@ -40,7 +44,7 @@ export default function CampaignPopup() {
                                 <div className="p-2 bg-amber-50 rounded-xl">
                                     <ShieldAlert size={24} />
                                 </div>
-                                <h3 className="text-xl font-bold text-slate-800">Security Reminder</h3>
+                                <h3 className="text-xl font-bold text-slate-800">{siteConfig.popupTitle}</h3>
                             </div>
                             <button
                                 onClick={closePopup}
@@ -57,8 +61,7 @@ export default function CampaignPopup() {
                             </h4>
                             <div className="space-y-4 text-slate-600 leading-relaxed">
                                 <p>
-                                    As part of our commitment to information security, we would like to remind everyone about our
-                                    <span className="font-semibold text-amber-600"> Clean Desk Policy</span>.
+                                    {siteConfig.popupContent}
                                 </p>
                                 <ul className="space-y-2 bg-slate-50 p-4 rounded-xl text-sm">
                                     <li className="flex items-start space-x-2">

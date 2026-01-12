@@ -34,7 +34,7 @@ const Settings = () => {
             <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-sm border border-white/20 space-y-8 max-w-2xl">
 
                 {/* Theme Setting */}
-                <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-100 gap-4 md:gap-0">
                     <div className="flex items-center space-x-4">
                         <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
                             {isDarkMode ? <Moon size={24} /> : <Sun size={24} />}
@@ -44,7 +44,7 @@ const Settings = () => {
                             <p className="text-sm text-slate-500">Toggle between Light and Dark mode</p>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-end space-x-3 w-full md:w-auto">
                         <span className={clsx("text-sm font-medium transition-colors", !isDarkMode ? "text-slate-800" : "text-slate-400")}>Light</span>
                         <ToggleSwitch isOn={isDarkMode} onToggle={() => setIsDarkMode(!isDarkMode)} />
                         <span className={clsx("text-sm font-medium transition-colors", isDarkMode ? "text-slate-800" : "text-slate-400")}>Dark</span>
@@ -52,7 +52,7 @@ const Settings = () => {
                 </div>
 
                 {/* Language Setting */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center space-x-4">
                         <div className="p-3 bg-blue-100 text-blue-600 rounded-xl">
                             <Languages size={24} />
@@ -62,7 +62,7 @@ const Settings = () => {
                             <p className="text-sm text-slate-500">Select your preferred language</p>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-end space-x-3 w-full md:w-auto">
                         <span className={clsx("text-sm font-medium transition-colors", !isIndonesian ? "text-slate-800" : "text-slate-400")}>EN</span>
                         <ToggleSwitch isOn={isIndonesian} onToggle={() => setIsIndonesian(!isIndonesian)} />
                         <span className={clsx("text-sm font-medium transition-colors", isIndonesian ? "text-slate-800" : "text-slate-400")}>ID</span>
