@@ -1,0 +1,24 @@
+# Node.js / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm/
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# Databases / Generated Files (Best Practice: Re-generate these)
+# Uncomment lines below if you want to exclude databases from git
+# backend-ai/database_2_vector/
+# backend-ai/database_3_relational/
+
+# OS specific
+.DS_Store
+Thumbs.db
