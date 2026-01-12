@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, Maximize2, Minimize2 } from 'lucide-react';
 import clsx from 'clsx';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
     id: string;
@@ -51,9 +53,18 @@ const Chatbot = () => {
         setInputValue('');
         setIsLoading(true);
 
+        // Placeholder ID untuk pesan bot yang sedang diketik
+        const botMessageId = (Date.now() + 1).toString();
+        
+        // Buat pesan kosong awal untuk bot
+        setMessages(prev => [...prev, {
+            id: botMessageId,
+            text: "",
+            sender: 'bot',
+            timestamp: new Date()
+        }]);
+
         try {
-            // Default division is IT for now as requested for integration demo
-            // In a real app, getting this from UserContext
             const response = await fetch('http://localhost:8000/chat', {
                 method: 'POST',
                 headers: {
@@ -65,29 +76,40 @@ const Chatbot = () => {
                 }),
             });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.body) throw new Error('ReadableStream not supported');
 
-            const data = await response.json();
-            
-            const botResponse: Message = {
-                id: (Date.now() + 1).toString(),
-                text: data.response,
-                sender: 'bot',
-                timestamp: new Date()
-            };
-            setMessages(prev => [...prev, botResponse]);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let accumulatedText = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                accumulatedText += chunk;
+
+                // Update pesan bot secara real-time
+                setMessages(prev => 
+                    prev.map(msg => 
+                        msg.id === botMessageId 
+                            ? { ...msg, text: accumulatedText }
+                            : msg
+                    )
+                );
+            }
 
         } catch (error) {
             console.error("Error communicating with AI backend:", error);
-             const errorResponse: Message = {
-                id: (Date.now() + 1).toString(),
-                text: "Maaf, sistem AI sedang tidak dapat dihubungi. Pastikan server backend sudah berjalan.",
-                sender: 'bot',
-                timestamp: new Date()
-            };
-            setMessages(prev => [...prev, errorResponse]);
+            // Jika error, ganti pesan kosong tadi dengan pesan error
+            setMessages(prev => 
+                prev.map(msg => 
+                    msg.id === botMessageId 
+                        ? { ...msg, text: "Maaf, sistem AI sedang tidak dapat dihubungi atau terjadi kesalahan saat streaming." }
+                        : msg
+                )
+            );
         } finally {
             setIsLoading(false);
         }
@@ -179,10 +201,16 @@ const Chatbot = () => {
                                             "max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed shadow-sm",
                                             msg.sender === 'user'
                                                 ? "bg-primary text-white rounded-br-none"
-                                                : "bg-white text-slate-700 border border-slate-100 rounded-bl-none"
+                                                : "bg-white text-slate-700 border border-slate-100 rounded-bl-none prose prose-slate prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-li:my-0"
                                         )}
                                     >
-                                        <p>{msg.text}</p>
+                                        {msg.sender === 'bot' ? (
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                {msg.text}
+                                            </ReactMarkdown>
+                                        ) : (
+                                            <p className="whitespace-pre-wrap">{msg.text}</p>
+                                        )}
                                         <span className={clsx(
                                             "text-[10px] mt-1 block opacity-70",
                                             msg.sender === 'user' ? "text-white/80" : "text-slate-400"

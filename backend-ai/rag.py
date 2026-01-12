@@ -129,6 +129,74 @@ def ask_bot(query, user_division):
     print(f"💬 JAWABAN: {clean_response}")
     return clean_response
 
+def ask_bot_stream(query, user_division):
+    # --- LOGIKA FILTER SECURITY (Sama seperti ask_bot) ---
+    filter_rule = {
+        "$or": [
+            {"access_level": "Public"},
+            {
+                "$and": [
+                    {"access_level": "Secret"},
+                    {"division": user_division}
+                ]
+            }
+        ]
+    }
+
+    # --- RETRIEVAL ---
+    retriever = vector_store.as_retriever(
+        search_type="similarity",
+        search_kwargs={
+            "k": 4, 
+            "filter": filter_rule 
+        }
+    )
+    
+    # Template Prompt (Sama)
+    template = """
+    <|im_start|>system
+    Hai! Saya BILA (BGR Indonesia Live Assistant), asisten virtual Anda. Tugas saya menjawab pertanyaan karyawan berdasarkan SOP perusahaan.
+    
+    ATURAN FORMAT JAWABAN (WAJIB MARKDOWN):
+    1. Gunakan **Heading** (### Judul) untuk memisahkan bagian jawaban.
+    2. Gunakan **List** (1. atau - ) untuk langkah-langkah atau poin penting.
+    3. **Tebalkan** kata kunci penting.
+    4. Buat paragraf pendek agar mudah dibaca.
+    
+    ATURAN KONTEN:
+    1. Jawab HANYA berdasarkan Context di bawah.
+    2. Jika jawaban tidak ada di Context, katakan: "Maaf, informasi tidak tersedia di SOP."
+    3. Jawab dalam Bahasa yang formal, profesional, namun tetap ramah.
+    <|im_end|>
+    
+    <|im_start|>user
+    Context:
+    {context}
+    
+    Pertanyaan:
+    {question}
+    <|im_end|>
+    <|im_start|>assistant
+    """
+    
+    prompt = ChatPromptTemplate.from_template(template)
+    
+    def format_docs(docs):
+        return "\n\n".join([d.page_content for d in docs])
+
+    chain = (
+        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        | prompt
+        | llm
+    )
+    
+    # Gunakan .stream() untuk streaming response
+    for chunk in chain.stream(query):
+        if hasattr(chunk, 'content'):
+            yield chunk.content
+        else:
+            yield str(chunk)
+
 # --- INTERACTIVE CHATBOT ---
 if __name__ == "__main__":
     print("\n🤖 --- BILA (Bot Inovatif Luwes & Andal) --- 🤖")
