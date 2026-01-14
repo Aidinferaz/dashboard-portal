@@ -105,7 +105,7 @@ const Login = () => {
                 <div className="relative">
                     <input
                         type={showPassword ? "text" : "password"}
-                        placeholder="Password"
+                        placeholder="Kata Sandi"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         className="w-full px-4 py-3 rounded-md border border-slate-300 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary placeholder:text-slate-400 text-slate-700 pr-12"
@@ -125,7 +125,7 @@ const Login = () => {
                     <div className="flex gap-4 items-center">
                         <input
                             type="text"
-                            placeholder="Captcha Words"
+                            placeholder="Kode Captcha"
                             className="flex-1 px-4 py-3 rounded-md border border-slate-300 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary placeholder:text-slate-400 text-slate-700"
                         />
                         <div className="h-12 bg-slate-100 border border-slate-200 rounded px-4 flex items-center justify-center relative overflow-hidden w-32 select-none">
@@ -146,12 +146,12 @@ const Login = () => {
                             ${isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-cyan-400 hover:bg-cyan-500 hover:-translate-y-0.5 shadow-cyan-400/30'}
                         `}
                     >
-                        {isLoading ? 'Loading...' : 'Login'}
+                        {isLoading ? 'Memuat...' : 'Masuk'}
                     </button>
 
                     <div className="text-center">
                         <a href="#" className="font-medium text-slate-600 hover:text-primary transition-colors">
-                            Lupa Password / Akun Terblokir ?
+                            Lupa Kata Sandi / Akun Terblokir ?
                         </a>
                     </div>
                 </div>

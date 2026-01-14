@@ -14,6 +14,7 @@ export interface SiteConfig {
 export interface Document {
     id: string;
     title: string;
+    type: 'SKD' | 'SOP';
     division: string;
     classification: 'Public' | 'Private';
     date: string;
@@ -42,8 +43,8 @@ const defaultSiteConfig: SiteConfig = {
 
 // Mock Initial Documents
 const initialDocuments: Document[] = [
-    { id: '1', title: 'Q1 Financial Report', division: 'Finance', classification: 'Private', date: '2024-03-01', fileUrl: '#' },
-    { id: '2', title: 'Employee Handbook 2024', division: 'HR', classification: 'Public', date: '2024-01-15', fileUrl: '#' },
+    { id: '1', title: 'Q1 Financial Report', type: 'SKD', division: 'Finance', classification: 'Private', date: '2024-03-01', fileUrl: '#' },
+    { id: '2', title: 'Employee Handbook 2024', type: 'SOP', division: 'HR', classification: 'Public', date: '2024-01-15', fileUrl: '#' },
 ];
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);

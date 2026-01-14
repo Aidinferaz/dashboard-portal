@@ -48,9 +48,9 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
     };
 
     const menuItems = [
-        { icon: User, label: 'Profile', onClick: () => navigate('/profile') },
-        { icon: Settings, label: 'Settings', onClick: () => navigate('/settings') },
-        { icon: LogOut, label: 'Log Out', onClick: handleLogout, className: 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' },
+        { icon: User, label: 'Profil', onClick: () => navigate('/profile') },
+        { icon: Settings, label: 'Pengaturan', onClick: () => navigate('/settings') },
+        { icon: LogOut, label: 'Keluar', onClick: handleLogout, className: 'text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' },
     ];
 
     return (

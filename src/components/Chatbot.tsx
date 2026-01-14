@@ -15,6 +15,7 @@ const Chatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isMaximized, setIsMaximized] = useState(false);
     const [inputValue, setInputValue] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // Added loading state
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -33,10 +34,10 @@ const Chatbot = () => {
         scrollToBottom();
     }, [messages]);
 
-    const handleSendMessage = (e?: React.FormEvent) => {
+    const handleSendMessage = async (e?: React.FormEvent) => {
         e?.preventDefault();
 
-        if (!inputValue.trim()) return;
+        if (!inputValue.trim() || isLoading) return;
 
         const newUserMessage: Message = {
             id: Date.now().toString(),
@@ -47,17 +48,43 @@ const Chatbot = () => {
 
         setMessages(prev => [...prev, newUserMessage]);
         setInputValue('');
+        setIsLoading(true);
 
-        // Simulate Bot Response (To be replaced by AI integration)
-        setTimeout(() => {
-            const botResponse: Message = {
+        try {
+            const response = await fetch('http://localhost:5000/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: newUserMessage.text,
+                    model: "gemma3:4b"
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to get response');
+            }
+
+            const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "I've received your message. An AI developer will connect me to a real brain soon!",
+                text: data.reply || "I didn't get a response.",
                 sender: 'bot',
                 timestamp: new Date()
             };
-            setMessages(prev => [...prev, botResponse]);
-        }, 1000);
+            setMessages(prev => [...prev, botMessage]);
+        } catch (error) {
+            console.error('Chat error:', error);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "Sorry, I'm having trouble connecting to my brain (Ollama). Please ensure the backend and Ollama are running.",
+                sender: 'bot',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

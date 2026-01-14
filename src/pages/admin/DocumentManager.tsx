@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { Trash2, FileText, Upload, Plus } from 'lucide-react';
+import { Trash2, FileText, Upload, Plus, Minus } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,6 +11,7 @@ const DocumentManager = () => {
     // Form State
     const [title, setTitle] = useState('');
     const [division, setDivision] = useState('Finance');
+    const [docType, setDocType] = useState<'SKD' | 'SOP'>('SKD');
     const [classification, setClassification] = useState<'Public' | 'Private'>('Public');
 
     const handleUpload = (e: React.FormEvent) => {
@@ -19,6 +20,7 @@ const DocumentManager = () => {
 
         addDocument({
             title,
+            type: docType,
             division,
             classification,
             fileUrl: '#'
@@ -27,23 +29,36 @@ const DocumentManager = () => {
         // Reset
         setTitle('');
         setDivision('Finance');
+        setDocType('SKD');
         setClassification('Public');
         setIsFormOpen(false);
+    };
+
+    const handleDocTypeChange = (type: 'SKD' | 'SOP') => {
+        setDocType(type);
+        if (type === 'SOP') {
+            setClassification('Public');
+        }
     };
 
     return (
         <div className="space-y-8">
             <header className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Document Management</h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2">Upload and manage division documents</p>
+                    <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Manajemen Dokumen</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2">Unggah dan kelola dokumen divisi</p>
                 </div>
                 <button
                     onClick={() => setIsFormOpen(!isFormOpen)}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:bg-secondary transition-colors shadow-lg shadow-primary/20"
+                    className={clsx(
+                        "flex items-center gap-2 px-4 py-2 text-white rounded-xl transition-colors shadow-lg",
+                        isFormOpen
+                            ? "bg-secondary hover:bg-orange-600 shadow-orange-500/20"
+                            : "bg-primary hover:bg-teal-600 shadow-primary/20"
+                    )}
                 >
-                    <Plus size={20} />
-                    <span>Upload Document</span>
+                    {isFormOpen ? <Minus size={20} /> : <Plus size={20} />}
+                    <span>{isFormOpen ? "Unggah Dokumen" : "Unggah Dokumen"}</span>
                 </button>
             </header>
 
@@ -57,11 +72,11 @@ const DocumentManager = () => {
                         className="overflow-hidden"
                     >
                         <form onSubmit={handleUpload} className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 mb-8 space-y-6">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">New Document</h2>
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">Dokumen Baru</h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Document Title</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Judul Dokumen</label>
                                     <input
                                         type="text"
                                         value={title}
@@ -72,7 +87,7 @@ const DocumentManager = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Division</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Divisi</label>
                                     <select
                                         value={division}
                                         onChange={(e) => setDivision(e.target.value)}
@@ -85,41 +100,59 @@ const DocumentManager = () => {
                                         <option value="Operations">Operations</option>
                                     </select>
                                 </div>
+
+                                {/* Document Type & Classification */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Classification</label>
-                                    <div className="flex items-center gap-4">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipe Dokumen</label>
+                                    <div className="flex items-center gap-4 mb-3">
                                         <label className="flex items-center gap-2 cursor-pointer">
                                             <input
                                                 type="radio"
-                                                checked={classification === 'Public'}
-                                                onChange={() => setClassification('Public')}
+                                                checked={docType === 'SKD'}
+                                                onChange={() => handleDocTypeChange('SKD')}
                                                 className="text-primary focus:ring-primary"
                                             />
-                                            <span className="text-slate-700 dark:text-slate-300">Public</span>
+                                            <span className="text-slate-700 dark:text-slate-300">SKD</span>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer">
                                             <input
                                                 type="radio"
-                                                checked={classification === 'Private'}
-                                                onChange={() => setClassification('Private')}
+                                                checked={docType === 'SOP'}
+                                                onChange={() => handleDocTypeChange('SOP')}
                                                 className="text-primary focus:ring-primary"
                                             />
-                                            <span className="text-slate-700 dark:text-slate-300">Private</span>
+                                            <span className="text-slate-700 dark:text-slate-300">SOP</span>
                                         </label>
                                     </div>
+
+                                    {/* Classification Dropdown */}
+                                    <motion.div
+                                        animate={{ opacity: docType === 'SOP' ? 0.6 : 1 }}
+                                    >
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Klasifikasi</label>
+                                        <select
+                                            value={classification}
+                                            onChange={(e) => setClassification(e.target.value as 'Public' | 'Private')}
+                                            disabled={docType === 'SOP'}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            <option value="Public">Public</option>
+                                            <option value="Private">Private</option>
+                                        </select>
+                                    </motion.div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">File Upload</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Unggah Berkas</label>
                                     <div className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-4 flex flex-col items-center justify-center text-slate-400 hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer">
                                         <Upload size={24} className="mb-2" />
-                                        <span className="text-sm">Click to upload PDF</span>
+                                        <span className="text-sm">Klik untuk unggah PDF</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex justify-end pt-4">
                                 <button type="submit" className="px-6 py-2 bg-slate-800 dark:bg-slate-700 text-white rounded-xl hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors">
-                                    Upload Document
+                                    Unggah Dokumen
                                 </button>
                             </div>
                         </form>
@@ -132,11 +165,12 @@ const DocumentManager = () => {
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700">
                         <tr>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Document</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Division</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Date</th>
+                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Dokumen</th>
+                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Tipe</th>
+                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Divisi</th>
+                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Tanggal</th>
                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Status</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 text-right">Actions</th>
+                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
@@ -149,6 +183,11 @@ const DocumentManager = () => {
                                         </div>
                                         <span className="font-medium text-slate-700 dark:text-slate-200">{doc.title}</span>
                                     </div>
+                                </td>
+                                <td className="px-6 py-4">
+                                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-semibold">
+                                        {doc.type}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{doc.division}</td>
                                 <td className="px-6 py-4 text-slate-500 dark:text-slate-500 text-sm">{doc.date}</td>
@@ -176,7 +215,7 @@ const DocumentManager = () => {
                                 <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                                     <div className="flex flex-col items-center">
                                         <FileText size={48} className="mb-4 opacity-20" />
-                                        <p>No documents found</p>
+                                        <p>Tidak ada dokumen ditemukan</p>
                                     </div>
                                 </td>
                             </tr>

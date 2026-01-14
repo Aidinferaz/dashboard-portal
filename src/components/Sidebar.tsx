@@ -41,10 +41,10 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen = false, setMobileOpen }:
 
     const menuItems = [
         { icon: Home, label: "Dashboard", path: "/" },
-        { icon: User, label: "Profile", path: "/profile" },
-        { icon: Settings, label: "Settings", path: "/settings" },
-        { icon: Palette, label: "Site Config", path: "/admin/config" },
-        { icon: FileText, label: "Documents", path: "/admin/documents" },
+        { icon: User, label: "Profil", path: "/profile" },
+        { icon: Settings, label: "Pengaturan", path: "/settings" },
+        { icon: Palette, label: "Konfigurasi Situs", path: "/admin/config" },
+        { icon: FileText, label: "Dokumen", path: "/admin/documents" },
     ];
 
     return (
@@ -151,7 +151,7 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen = false, setMobileOpen }:
                         )}
                     >
                         <LogOut size={22} />
-                        {!collapsed && <span className="ml-3 font-medium">Log Out</span>}
+                        {!collapsed && <span className="ml-3 font-medium">Keluar</span>}
                     </button>
                 </div>
             </motion.div>

@@ -72,7 +72,7 @@ const Profile = () => {
                                 onClick={() => setIsEditing(!isEditing)}
                                 className="px-6 py-2.5 rounded-xl font-medium transition-all bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:border-primary text-slate-700 dark:text-slate-200 hover:text-primary"
                             >
-                                {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+                                {isEditing ? 'Batal' : 'Edit Profil'}
                             </button>
                         </div>
                     </div>
@@ -89,14 +89,14 @@ const Profile = () => {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Personal Information</h2>
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Informasi Pribadi</h2>
                             {isEditing && (
                                 <button
                                     onClick={handleSave}
                                     className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:bg-secondary transition-colors shadow-lg shadow-primary/20"
                                 >
                                     <Save size={18} />
-                                    <span>Save Changes</span>
+                                    <span>Simpan Perubahan</span>
                                 </button>
                             )}
                         </div>
@@ -104,7 +104,7 @@ const Profile = () => {
                         <form className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nama Lengkap</label>
                                     <div className="relative">
                                         <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                         <input
@@ -129,7 +129,7 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Alamat Email</label>
                                     <div className="relative">
                                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                         <input
@@ -142,7 +142,7 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Location</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Lokasi</label>
                                     <div className="relative">
                                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                         <input
@@ -173,14 +173,14 @@ const Profile = () => {
                 {/* Right Column: Key Details */}
                 <div className="space-y-6">
                     <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700">
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Employment Details</h3>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Detail Pekerjaan</h3>
                         <div className="space-y-4">
                             <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
                                 <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
                                     <Briefcase size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Department</p>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Departemen</p>
                                     <p className="font-medium text-slate-700 dark:text-slate-200">{userData.division}</p>
                                 </div>
                             </div>
@@ -189,7 +189,7 @@ const Profile = () => {
                                     <Calendar size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Joined Date</p>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Tanggal Bergabung</p>
                                     <p className="font-medium text-slate-700 dark:text-slate-200">{userData.joinDate}</p>
                                 </div>
                             </div>
@@ -201,12 +201,12 @@ const Profile = () => {
                         <div className="absolute top-0 right-0 p-8 opacity-5 dark:opacity-10 group-hover:scale-110 transition-transform duration-500">
                             <User size={120} className="text-slate-800 dark:text-white" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Account Status</h3>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 relative z-10">Your account is fully active and has access to all assigned modules.</p>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Status Akun</h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 relative z-10">Akun Anda aktif dan memiliki akses ke semua modul yang ditugaskan.</p>
 
                         <div className="inline-flex items-center px-3 py-1 bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold border border-green-200 dark:border-green-500/30 relative z-10">
                             <span className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 mr-2 animate-pulse"></span>
-                            Active Employee
+                            Karyawan Aktif
                         </div>
                     </div>
                 </div>

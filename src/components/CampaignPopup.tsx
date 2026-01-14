@@ -53,7 +53,7 @@ export default function CampaignPopup() {
                         {/* Header with Title */}
                         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-white text-center w-full ml-6">
-                                {siteConfig.popupTitle || 'Announcement'}
+                                {siteConfig.popupTitle || 'Pengumuman'}
                             </h3>
                             <button
                                 onClick={closePopup}
@@ -117,7 +117,7 @@ export default function CampaignPopup() {
                                 onClick={closePopup}
                                 className="w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold rounded-xl transition-all shadow-lg active:scale-[0.98]"
                             >
-                                I Understand
+                                Saya Mengerti
                             </button>
                         </div>
                     </motion.div>

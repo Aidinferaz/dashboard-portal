@@ -8,8 +8,8 @@ const SiteConfig = () => {
     return (
         <div className="space-y-8">
             <header>
-                <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Site Configuration</h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2">Customize the visual assets and campaigns of the portal</p>
+                <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Konfigurasi Situs</h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-2">Kustomisasi aset visual dan kampanye portal</p>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -20,7 +20,7 @@ const SiteConfig = () => {
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Banner Title</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Judul Banner</label>
                             <input
                                 type="text"
                                 value={siteConfig.bannerTitle}
@@ -29,7 +29,7 @@ const SiteConfig = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Banner Subtitle</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Subjudul Banner</label>
                             <textarea
                                 value={siteConfig.bannerSubtitle}
                                 onChange={(e) => updateSiteConfig({ bannerSubtitle: e.target.value })}
@@ -38,7 +38,7 @@ const SiteConfig = () => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Banner Image URL</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">URL Gambar Banner</label>
                             <input
                                 type="text"
                                 value={siteConfig.bannerImage}
@@ -52,7 +52,7 @@ const SiteConfig = () => {
                 {/* Popup Configuration */}
                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Campaign Popup</h2>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Popup Kampanye</h2>
                         <ToggleSwitch
                             isOn={siteConfig.popupActive}
                             onToggle={() => updateSiteConfig({ popupActive: !siteConfig.popupActive })}
@@ -62,7 +62,7 @@ const SiteConfig = () => {
                     <div className="space-y-6">
                         {/* Title Input */}
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Popup Title</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Judul Popup</label>
                             <input
                                 type="text"
                                 value={siteConfig.popupTitle || ''}
@@ -74,7 +74,7 @@ const SiteConfig = () => {
 
                         {/* Image List */}
                         <div className="space-y-3">
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Active Banners</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Banner Aktif</label>
                             <div className="grid grid-cols-2 gap-4">
                                 {siteConfig.popupImages.map((img, index) => (
                                     <div key={index} className="group relative aspect-video bg-slate-100 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
@@ -94,7 +94,7 @@ const SiteConfig = () => {
                                 {siteConfig.popupImages.length === 0 && (
                                     <div className="col-span-2 py-8 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
                                         <ImageIcon size={32} className="mb-2 opacity-50" />
-                                        <span className="text-sm">No images added</span>
+                                        <span className="text-sm">Belum ada gambar</span>
                                     </div>
                                 )}
                             </div>
@@ -102,7 +102,7 @@ const SiteConfig = () => {
 
                         {/* Add New Image */}
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Add New Image URL</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tambah URL Gambar Baru</label>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
@@ -121,11 +121,11 @@ const SiteConfig = () => {
                                     className="px-4 py-2 bg-primary hover:bg-secondary text-white rounded-xl transition-colors flex items-center gap-2 font-medium"
                                 >
                                     <Plus size={20} />
-                                    Add
+                                    Tambah
                                 </button>
                             </div>
                             <p className="text-xs text-slate-400 mt-2">
-                                Currently supports Image URLs. For local files, please add them to the project assets and reference them.
+                                Saat ini mendukung URL Gambar. Untuk file lokal, silakan tambahkan ke aset proyek dan referensikan.
                             </p>
                         </div>
                     </div>

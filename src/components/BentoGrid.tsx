@@ -73,15 +73,15 @@ const BentoGrid = () => {
         <div className="py-2">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Applications & Services</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Quick access to company systems</p>
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-white">Aplikasi & Layanan</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Akses cepat sistem perusahaan</p>
                 </div>
 
                 <div className="relative w-full md:w-72">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input
                         type="text"
-                        placeholder="Search services..."
+                        placeholder="Cari layanan..."
                         className="w-full pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm placeholder:text-slate-400 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
                     />
                 </div>
