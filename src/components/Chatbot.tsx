@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Maximize2, Minimize2, Sparkles, MessageSquare } from 'lucide-react';
 import clsx from 'clsx';
-import BilaLogo from '../assets/BILA AI 1.png';
+import BilaLogo from '../assets/bila-ai.png';
 
 interface Message {
     id: string;
