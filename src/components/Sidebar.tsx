@@ -5,14 +5,15 @@ import logo from '../assets/BGR_logo.png';
 import {
     Home,
     Settings,
-    LogOut,
     ChevronLeft,
     ChevronRight,
     User,
     Palette,
-    FileText
+    FileText,
+    Users
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
     collapsed: boolean;
@@ -30,22 +31,23 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen = false, setMobileOpen }:
         if (setMobileOpen) setMobileOpen(false);
     }, [location.pathname]);
 
-    const handleLogout = () => {
-        // 1. Remove the security keys
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+    const { user } = useAuth();
 
-        // 2. Redirect to Login Page
-        navigate('/login');
-    };
+    // Define logic:
+    // User Management -> Super Admin only
+    // Site Config -> Super Admin only
+    // Documents -> Admin & Super Admin
 
-    const menuItems = [
-        { icon: Home, label: "Dashboard", path: "/" },
-        { icon: User, label: "Profil", path: "/profile" },
-        { icon: Settings, label: "Pengaturan", path: "/settings" },
-        { icon: Palette, label: "Konfigurasi Situs", path: "/admin/config" },
-        { icon: FileText, label: "Dokumen", path: "/admin/documents" },
+    const allMenuItems = [
+        { icon: Home, label: "Dashboard", path: "/", roles: ['user', 'admin', 'super_admin'] },
+        { icon: User, label: "Profil", path: "/profile", roles: ['user', 'admin', 'super_admin'] },
+        { icon: Settings, label: "Pengaturan", path: "/settings", roles: ['user', 'admin', 'super_admin'] },
+        { icon: Users, label: "Manajemen User", path: "/admin/users", roles: ['super_admin'] },
+        { icon: Palette, label: "Konfigurasi Situs", path: "/admin/config", roles: ['super_admin'] },
+        { icon: FileText, label: "Dokumen", path: "/admin/documents", roles: ['admin', 'super_admin'] },
     ];
+
+    const menuItems = allMenuItems.filter(item => user && item.roles.includes(user.role));
 
     return (
         <>
@@ -141,19 +143,7 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen = false, setMobileOpen }:
                     })}
                 </div>
 
-                {/* Footer - LOGOUT IS HERE */}
-                <div className="p-4 border-t border-slate-50 dark:border-slate-800">
-                    <button
-                        onClick={handleLogout}
-                        className={clsx(
-                            "w-full flex items-center p-3 rounded-2xl text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-secondary transition-colors",
-                            collapsed ? "justify-center" : ""
-                        )}
-                    >
-                        <LogOut size={22} />
-                        {!collapsed && <span className="ml-3 font-medium">Keluar</span>}
-                    </button>
-                </div>
+                {/* Footer - LOGOUT REMOVED AS PER REQUEST */}
             </motion.div>
         </>
     );

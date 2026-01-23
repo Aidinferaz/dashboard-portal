@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, RefreshCw, Code2 } from 'lucide-react';
+import { Eye, EyeOff, RefreshCw, Code2, Shield, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/BGR_logo.png';
 
 const Login = () => {
@@ -56,18 +57,11 @@ const Login = () => {
         }
     };
 
-    // --- DEV BYPASS (For your Front-End Guy) ---
-    const handleDevBypass = () => {
-        // 1. Set a FAKE token so the Router lets him in
-        localStorage.setItem('token', 'dev-bypass-token-123');
+    // --- DEMO LOGIN ---
+    const { login } = useAuth();
 
-        // 2. Set FAKE user data so the Topbar doesn't crash
-        localStorage.setItem('user', JSON.stringify({
-            id: 'DEV',
-            nik: 'FRONTEND-USER'
-        }));
-
-        // 3. Go to Dashboard
+    const handleDemoLogin = (role: any) => {
+        login(role);
         navigate('/');
     };
 
@@ -157,15 +151,29 @@ const Login = () => {
                 </div>
             </form>
 
-            {/* DEV BYPASS BUTTON (Only for your Frontend Guy) */}
-            <div className="border-t border-slate-100 pt-4">
-                <button
-                    onClick={handleDevBypass}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium rounded-md transition-colors"
-                >
-                    <Code2 size={16} />
-                    Frontend Developer Bypass
-                </button>
+            {/* DEMO ACCESS (For Testing RBAC) */}
+            <div className="border-t border-slate-100 pt-6 space-y-3">
+                <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest">Demo Access</p>
+                <div className="grid grid-cols-1 gap-2">
+                    <button
+                        onClick={() => handleDemoLogin('super_admin')}
+                        className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-medium rounded-lg transition-colors border border-indigo-200"
+                    >
+                        <Code2 size={16} /> Login as Super Admin (All Access)
+                    </button>
+                    <button
+                        onClick={() => handleDemoLogin('admin')}
+                        className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium rounded-lg transition-colors border border-emerald-200"
+                    >
+                        <Shield size={16} /> Login as Admin (Docs Only)
+                    </button>
+                    <button
+                        onClick={() => handleDemoLogin('user')}
+                        className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-medium rounded-lg transition-colors border border-slate-200"
+                    >
+                        <User size={16} /> Login as User (Dashboard Only)
+                    </button>
+                </div>
             </div>
 
             {/* Footer */}

@@ -2,31 +2,43 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
+import SmoothImage from './ui/SmoothImage';
 
 export default function CampaignPopup() {
     const { siteConfig } = useAdmin();
     const [isOpen, setIsOpen] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const images = siteConfig.popupImages || [];
-    const hasMultiple = images.length > 1;
+    const banners = siteConfig.popupBanners || [];
+    const hasMultiple = banners.length > 1;
 
     useEffect(() => {
-        // Trigger popup on mount (page load) if active & has images
-        if (siteConfig.popupActive && images.length > 0) {
+        // Trigger popup on mount (page load) if active & has banners
+        if (siteConfig.popupActive && banners.length > 0) {
             const timer = setTimeout(() => setIsOpen(true), 1000);
             return () => clearTimeout(timer);
         }
-    }, [siteConfig.popupActive, images.length]);
+    }, [siteConfig.popupActive, banners.length]);
+
+    // Preload next image logic
+    useEffect(() => {
+        if (!isOpen) return;
+        const nextIndex = (currentSlide + 1) % banners.length;
+        const nextImage = banners[nextIndex]?.image;
+        if (nextImage) {
+            const img = new Image();
+            img.src = nextImage;
+        }
+    }, [currentSlide, banners, isOpen]);
 
     const closePopup = () => setIsOpen(false);
 
     const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % images.length);
+        setCurrentSlide((prev) => (prev + 1) % banners.length);
     };
 
     const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + images.length) % images.length);
+        setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length);
     };
 
     return (
@@ -66,16 +78,38 @@ export default function CampaignPopup() {
                         {/* Image Carousel Section */}
                         <div className="relative w-full aspect-[4/3] bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
                             <AnimatePresence mode='wait'>
-                                <motion.img
+                                <motion.div
                                     key={currentSlide}
-                                    src={images[currentSlide]}
-                                    alt={`Slide ${currentSlide + 1}`}
                                     initial={{ opacity: 0, x: 20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.3 }}
-                                    className="w-full h-full object-contain"
-                                />
+                                    className="w-full h-full relative group"
+                                >
+                                    {banners[currentSlide].image ? (
+                                        <SmoothImage
+                                            src={banners[currentSlide].image!}
+                                            alt={banners[currentSlide].title || "Banner"}
+                                            className="w-full h-full"
+                                            objectFit="contain"
+                                        />
+                                    ) : (
+                                        <div className={`w-full h-full bg-gradient-to-br ${banners[currentSlide].color || 'from-slate-200 to-slate-300'} flex items-center justify-center p-8 text-center`}>
+                                            <div>
+                                                <h4 className="text-2xl font-bold text-white mb-2">{banners[currentSlide].title}</h4>
+                                                <p className="text-white/90">{banners[currentSlide].subtitle}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Optional Overlay Text for Images */}
+                                    {banners[currentSlide].image && (banners[currentSlide].title || banners[currentSlide].subtitle) && (
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <h4 className="font-bold text-lg">{banners[currentSlide].title}</h4>
+                                            <p className="text-sm text-slate-200">{banners[currentSlide].subtitle}</p>
+                                        </div>
+                                    )}
+                                </motion.div>
                             </AnimatePresence>
 
                             {/* Navigation Buttons */}
@@ -99,7 +133,7 @@ export default function CampaignPopup() {
                             {/* Dots Indicator */}
                             {hasMultiple && (
                                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 p-1.5 bg-black/20 rounded-full backdrop-blur-sm">
-                                    {images.map((_, idx) => (
+                                    {banners.map((_, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => setCurrentSlide(idx)}

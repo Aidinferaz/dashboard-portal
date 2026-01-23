@@ -2,11 +2,17 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import defaultBanner from '../assets/banner.jpg';
 
 // Types
+export interface Banner {
+    id: string;
+    title: string;
+    subtitle: string;
+    image: string;
+    color?: string; // To keep the gradient aesthetic
+}
+
 export interface SiteConfig {
-    bannerTitle: string;
-    bannerSubtitle: string;
-    bannerImage: string; // URL or path
-    popupImages: string[]; // List of banner URLs for the popup slider
+    heroBanners: Banner[];
+    popupBanners: Banner[];
     popupTitle: string;
     popupActive: boolean;
 }
@@ -31,13 +37,39 @@ interface AdminContextType {
 
 // Default Config
 const defaultSiteConfig: SiteConfig = {
-    bannerTitle: "Net Zero Emissions 2060",
-    bannerSubtitle: "Challenge yourself to take action for a cleaner future.",
-    bannerImage: "https://picsum.photos/seed/business/1200/600",
-    popupImages: [
-        defaultBanner
+    heroBanners: [
+        {
+            id: '1',
+            title: "Net Zero Emissions 2060",
+            subtitle: "Challenge yourself to take action for a cleaner future.",
+            image: "https://picsum.photos/seed/business/1200/600",
+            color: "from-blue-600 to-indigo-600"
+        },
+        {
+            id: '2',
+            title: "Digital Transformation",
+            subtitle: "Embracing technology to drive efficiency.",
+            image: "https://picsum.photos/seed/tech/1200/600",
+            color: "from-purple-600 to-pink-600"
+        },
+        {
+            id: '3',
+            title: "Safety First",
+            subtitle: "Prioritizing safety in every operation.",
+            image: "https://picsum.photos/seed/safety/1200/600",
+            color: "from-orange-500 to-red-500"
+        }
     ],
-    popupTitle: "Important Announcement",
+    popupBanners: [
+        {
+            id: 'p1',
+            title: "Pengumuman Penting",
+            subtitle: "Harap perhatikan jadwal maintenance sistem.",
+            image: defaultBanner,
+            color: "from-slate-800 to-slate-900"
+        }
+    ],
+    popupTitle: "Pengumuman Penting",
     popupActive: true,
 };
 

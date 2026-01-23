@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
+import SmoothImage from './ui/SmoothImage';
 
 import { useAdmin } from '../context/AdminContext';
 
@@ -8,27 +9,14 @@ const FeatureCarousel = () => {
     const { siteConfig } = useAdmin();
     const [current, setCurrent] = useState(0);
 
-    const slides = [
+    const slides = siteConfig.heroBanners.length > 0 ? siteConfig.heroBanners : [
+        // Fallback if empty
         {
-            id: 1,
-            title: siteConfig.bannerTitle,
-            subtitle: siteConfig.bannerSubtitle,
-            color: "from-blue-600 to-indigo-600",
-            image: siteConfig.bannerImage
-        },
-        {
-            id: 2,
-            title: "Welcome to New Semester 2026",
-            subtitle: "Check your new schedule and academic status.",
-            color: "from-primary to-emerald-500",
+            id: 'fallback-1',
+            title: "Welcome to Dashboard",
+            subtitle: "Configure your banners in Site Config",
+            color: "from-slate-700 to-slate-900",
             image: ""
-        },
-        {
-            id: 3,
-            title: "Library Services Update",
-            subtitle: "New digital collection available 24/7.",
-            color: "from-orange-500 to-red-500",
-            image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2690&auto=format&fit=crop"
         }
     ];
 
@@ -41,6 +29,16 @@ const FeatureCarousel = () => {
 
     const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
     const prevSlide = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+
+    // Preload images for smoother transitions
+    useEffect(() => {
+        const nextIndex = (current + 1) % slides.length;
+        const nextImage = slides[nextIndex]?.image;
+        if (nextImage) {
+            const img = new Image();
+            img.src = nextImage;
+        }
+    }, [current, slides]);
 
     return (
         <div className="relative w-full h-64 md:h-80 perspective-1000">
@@ -57,10 +55,11 @@ const FeatureCarousel = () => {
                         {/* Background Image if available */}
                         {slides[current].image && (
                             <div className="absolute inset-0 z-0">
-                                <img
-                                    src={slides[current].image}
+                                {/* Use SmoothImage for better loading UX */}
+                                <SmoothImage
+                                    src={slides[current].image!}
                                     alt={slides[current].title}
-                                    className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+                                    className="w-full h-full opacity-40 mix-blend-overlay"
                                 />
                                 <div className="absolute inset-0 bg-black/20" />
                             </div>

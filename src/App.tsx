@@ -6,8 +6,10 @@ import Settings from './pages/Settings';
 import SiteConfig from './pages/admin/SiteConfig';
 import DocumentManager from './pages/admin/DocumentManager';
 import Login from './pages/Login';
+import UserManagement from './pages/admin/UserManagement';
 import { AdminProvider } from './context/AdminContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { AuthProvider } from './context/AuthContext';
 
 // 1. Create a "Guard" component
 // This checks if the user has a token. If not, kicks them to /login
@@ -24,31 +26,34 @@ const ProtectedRoute = ({ children }: { children: any }) => {
 function App() {
     return (
         <SettingsProvider>
-            <AdminProvider>
-                <Routes>
-                    {/* Auth Routes - Public */}
-                    <Route path="/login" element={
-                        <Layout variant="auth">
-                            <Login />
-                        </Layout>
-                    } />
-
-                    {/* Dashboard Routes - Protected (Locked) */}
-                    <Route path="*" element={
-                        <ProtectedRoute>
-                            <Layout>
-                                <Routes>
-                                    <Route path="/" element={<Dashboard />} />
-                                    <Route path="/profile" element={<Profile />} />
-                                    <Route path="/settings" element={<Settings />} />
-                                    <Route path="/admin/config" element={<SiteConfig />} />
-                                    <Route path="/admin/documents" element={<DocumentManager />} />
-                                </Routes>
+            <AuthProvider>
+                <AdminProvider>
+                    <Routes>
+                        {/* Auth Routes - Public */}
+                        <Route path="/login" element={
+                            <Layout variant="auth">
+                                <Login />
                             </Layout>
-                        </ProtectedRoute>
-                    } />
-                </Routes>
-            </AdminProvider>
+                        } />
+
+                        {/* Dashboard Routes - Protected (Locked) */}
+                        <Route path="*" element={
+                            <ProtectedRoute>
+                                <Layout>
+                                    <Routes>
+                                        <Route path="/" element={<Dashboard />} />
+                                        <Route path="/profile" element={<Profile />} />
+                                        <Route path="/settings" element={<Settings />} />
+                                        <Route path="/admin/users" element={<UserManagement />} />
+                                        <Route path="/admin/config" element={<SiteConfig />} />
+                                        <Route path="/admin/documents" element={<DocumentManager />} />
+                                    </Routes>
+                                </Layout>
+                            </ProtectedRoute>
+                        } />
+                    </Routes>
+                </AdminProvider>
+            </AuthProvider>
         </SettingsProvider>
     );
 }
