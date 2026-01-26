@@ -11,6 +11,7 @@ import {
     closestCenter,
     KeyboardSensor,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     DragEndEvent,
@@ -72,12 +73,6 @@ const ServiceCard = ({ service, isEditing, isOverlay = false }: { service: Servi
                 isOverlay && "shadow-2xl scale-105 ring-2 ring-primary/50 cursor-grabbing bg-white/95 backdrop-blur-xl z-50 transform-gpu"
             )}
         >
-            {/* Shimmer Effect (Only in view mode) */}
-            {!isEditing && !isOverlay && (
-                <div className="absolute inset-0 translate-x-[-100%] group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent z-10 pointer-events-none" />
-            )}
-
-            {/* Edit Mode Indicator */}
             {isEditing && (
                 <div className="absolute top-2 right-2 text-slate-300">
                     <Grid size={16} />
@@ -115,6 +110,7 @@ const SortableServiceCard = ({ service, isEditing }: { service: Service; isEditi
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
+        touchAction: 'none'
     };
 
     return (
@@ -132,6 +128,12 @@ const BentoGrid = () => {
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5
+            }
+        }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
     );
 
