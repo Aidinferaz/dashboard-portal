@@ -50,6 +50,18 @@ const Profile = () => {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Mock save functionality as requested (no backend interaction)
+        setIsLoading(true); // Re-use isLoading or create a new submitting state if preferred, but for now simple
+
+        setTimeout(() => {
+            console.log("Saving user data (Mock):", userData);
+            // Simulate 1s delay
+            setIsLoading(false);
+            setIsEditing(false);
+            alert("Perubahan berhasil disimpan! (Mode Simulasi)");
+        }, 1000);
+
+        /* 
         try {
             const res = await fetch('/api/user', {
                 method: 'POST',
@@ -72,6 +84,7 @@ const Profile = () => {
         } catch (error) {
             console.error("Error saving profile:", error);
         }
+        */
     };
 
     if (isLoading) {
@@ -133,10 +146,11 @@ const Profile = () => {
                             {isEditing && (
                                 <button
                                     onClick={handleSave}
-                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:bg-secondary transition-colors shadow-lg shadow-primary/20"
+                                    disabled={isLoading}
+                                    className={`flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl hover:bg-secondary transition-colors shadow-lg shadow-primary/20 ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
                                 >
                                     <Save size={18} />
-                                    <span>Simpan Perubahan</span>
+                                    <span>{isLoading ? 'Menyimpan...' : 'Simpan Perubahan'}</span>
                                 </button>
                             )}
                         </div>

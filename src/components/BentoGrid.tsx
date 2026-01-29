@@ -130,8 +130,9 @@ const BentoGrid = () => {
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
         useSensor(TouchSensor, {
             activationConstraint: {
-                delay: 250,
-                tolerance: 5
+                delay: 150,
+                tolerance: 5,
+                distance: 8
             }
         }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })

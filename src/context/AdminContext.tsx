@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import defaultBanner from '../assets/banner.jpg';
+import defaultBanner from '../assets/PosterCleanDesk.png';
 
 // Types
 export interface Banner {
@@ -63,13 +63,12 @@ const defaultSiteConfig: SiteConfig = {
     popupBanners: [
         {
             id: 'p1',
-            title: "Pengumuman Penting",
-            subtitle: "Harap perhatikan jadwal maintenance sistem.",
+            title: "Perhatian",
+            subtitle: "Harap perhatikan.",
             image: defaultBanner,
-            color: "from-slate-800 to-slate-900"
         }
     ],
-    popupTitle: "Pengumuman Penting",
+    popupTitle: "Pengumuman",
     popupActive: true,
 };
 
