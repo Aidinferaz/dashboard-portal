@@ -179,8 +179,7 @@ const BentoGrid = () => {
     useEffect(() => {
         const fetchServices = async () => {
             try {
-                const API_URL = import.meta.env.VITE_POD1_API_URL || 'http://localhost:3000/api/apps';
-                const response = await fetch(API_URL);
+                const response = await fetch('https://pd2wporwvhijs3-3000.proxy.runpod.net/api/apps');
                 if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
 
