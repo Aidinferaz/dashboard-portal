@@ -11,23 +11,26 @@ const FeatureCarousel = () => {
 
     const [slides, setSlides] = useState<any[]>([{
         id: 'loading',
-        title: "Loading...",
-        subtitle: "Please wait",
-        color: "from-slate-700 to-slate-900",
-        image: ""
+        title: "",
+        subtitle: "",
+        color: "from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900",
+        image: "",
+        isLoading: true
     }]);
 
     useEffect(() => {
         const fetchBanner = async () => {
             try {
-                const res = await fetch('https://tt772cdzx3b7vl-3000.proxy.runpod.net/api/banner');
+                const res = await fetch('http://localhost:5000/api/banner');
                 const data = await res.json();
 
                 if (Array.isArray(data) && data.length > 0) {
                     const mappedSlides = data.map((item: any) => {
                         let imageUrl = item.image_path;
                         if (!imageUrl.startsWith('http')) {
-                            imageUrl = `https://tt772cdzx3b7vl-3000.proxy.runpod.net/${imageUrl}`;
+                            // If it's a relative path, assume valid public URL or backend static
+                            // For now we'll assumes it is served by the backend or public folder
+                            imageUrl = `http://localhost:5000${imageUrl}`;
                         }
 
                         return {
@@ -43,7 +46,7 @@ const FeatureCarousel = () => {
                     // Fallback for single object response (backward compatibility)
                     let imageUrl = data.image_path;
                     if (!imageUrl.startsWith('http')) {
-                        imageUrl = `http://localhost:3000/${imageUrl}`;
+                        imageUrl = `http://localhost:5000/${imageUrl}`;
                     }
 
                     setSlides([{
@@ -137,6 +140,13 @@ const FeatureCarousel = () => {
                                 {slides[current].subtitle}
                             </motion.p>
                         </div>
+
+                        {/* Loading Skeleton Indicator */}
+                        {slides[current].isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
+                            </div>
+                        )}
                     </motion.div>
                 </AnimatePresence>
             </div>

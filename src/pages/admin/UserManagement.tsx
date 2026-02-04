@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Trash2, Edit2, Shield, Filter, CheckCircle2 } from 'lucide-react';
+import { Search, Trash2, Edit2, Shield, Filter, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 import { User, UserRole } from '../../context/AuthContext';
 import ConfirmModal from '../../components/ui/ConfirmModal';
@@ -65,17 +65,10 @@ const UserManagement = () => {
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         {/* <Shield className="text-secondary" /> */}
-                        Manajemen Pengguna
+                        Manajemen User
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-2">Kelola akses dan peran pengguna</p>
                 </div>
-                <button className={clsx(
-                    "flex items-center gap-2 px-4 py-2 text-white rounded-xl transition-colors shadow-lg",
-                    "bg-primary hover:bg-teal-600 shadow-primary/20"
-                )}>
-                    <Plus size={20} />
-                    <span>Tambah Pengguna</span>
-                </button>
             </header>
 
             <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
@@ -113,8 +106,8 @@ const UserManagement = () => {
                         <thead className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
                             <tr>
                                 <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Pengguna</th>
-                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Peran</th>
-                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Divisi</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 hidden md:table-cell">Peran</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 hidden lg:table-cell">Divisi</th>
                                 <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Status</th>
                                 <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 text-right">Aksi</th>
                             </tr>
@@ -140,10 +133,10 @@ const UserManagement = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 hidden md:table-cell">
                                             <RoleBadge role={user.role} />
                                         </td>
-                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300 hidden lg:table-cell">
                                             {user.division}
                                         </td>
                                         <td className="px-6 py-4">

@@ -136,7 +136,7 @@ const SortableServiceCard = ({ service, isEditing }: { service: Service; isEditi
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        touchAction: 'none',
+        touchAction: isEditing ? 'none' : 'auto',
     };
 
     return (
@@ -234,6 +234,7 @@ const BentoGrid = () => {
             } catch (err) {
                 console.error("Error fetching services:", err);
                 setServices(DUMMY_SERVICES);
+                setDefaultServices(DUMMY_SERVICES);
             } finally {
                 setLoading(false);
             }

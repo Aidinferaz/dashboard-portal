@@ -12,6 +12,7 @@ const DocumentManager = () => {
     // Modal States
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [toggleId, setToggleId] = useState<string | null>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Form State
     const [title, setTitle] = useState('');
@@ -33,11 +34,14 @@ const DocumentManager = () => {
         });
 
         // Reset
+        setIsFormOpen(false);
+        setShowSuccessModal(true);
+
+        // Reset (except title for a moment if we want to use it? No, generic message is fine)
         setTitle('');
         setDivision('Finance');
         setDocType('SKD');
         setClassification('Public');
-        setIsFormOpen(false);
     };
 
     const handleDocTypeChange = (type: 'SKD' | 'SOP') => {
@@ -168,136 +172,149 @@ const DocumentManager = () => {
 
             {/* Document List */}
             <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700">
-                        <tr>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Dokumen</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Tipe</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Divisi</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Tanggal</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Klasifikasi</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Status</th>
-                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
-                        {documents.map((doc) => (
-                            <tr key={doc.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-lg">
-                                            <FileText size={20} />
-                                        </div>
-                                        <span className="font-medium text-slate-700 dark:text-slate-200">{doc.title}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-semibold">
-                                        {doc.type}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-slate-600 dark:text-slate-400">{doc.division}</td>
-                                <td className="px-6 py-4 text-slate-500 dark:text-slate-500 text-sm">{doc.date}</td>
-                                <td className="px-6 py-4">
-                                    <span className={clsx(
-                                        "px-2.5 py-1 rounded-full text-xs font-medium",
-                                        doc.classification === 'Public' ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-                                    )}>
-                                        {doc.classification}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        {doc.isActive ? (
-                                            <span className="flex items-center gap-1.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-full">
-                                                <CheckCircle size={12} />
-                                                Active
-                                            </span>
-                                        ) : (
-                                            <span className="flex items-center gap-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-full">
-                                                <XCircle size={12} />
-                                                Inactive
-                                            </span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <button
-                                            onClick={() => window.open(doc.fileUrl, '_blank')}
-                                            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                                            title="View Document"
-                                        >
-                                            <Eye size={18} />
-                                        </button>
-
-                                        <button
-                                            onClick={() => setToggleId(doc.id)}
-                                            className={clsx(
-                                                "p-2 rounded-lg transition-colors",
-                                                doc.isActive
-                                                    ? "text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                                    : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                                            )}
-                                            title={doc.isActive ? "Deactivate" : "Activate"}
-                                        >
-                                            <Power size={18} />
-                                        </button>
-
-                                        <button
-                                            onClick={() => setDeleteId(doc.id)}
-                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                            title="Delete Document"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        {documents.length === 0 && (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead className="bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-700">
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
-                                    <div className="flex flex-col items-center">
-                                        <FileText size={48} className="mb-4 opacity-20" />
-                                        <p>Tidak ada dokumen ditemukan</p>
-                                    </div>
-                                </td>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Dokumen</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 hidden sm:table-cell">Tipe</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 hidden md:table-cell">Divisi</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 hidden lg:table-cell">Tanggal</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 hidden xl:table-cell">Klasifikasi</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Status</th>
+                                <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 text-right">Aksi</th>
                             </tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
+                            {documents.map((doc) => (
+                                <tr key={doc.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-lg">
+                                                <FileText size={20} />
+                                            </div>
+                                            <span className="font-medium text-slate-700 dark:text-slate-200">{doc.title}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 hidden sm:table-cell">
+                                        <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-semibold">
+                                            {doc.type}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400 hidden md:table-cell">{doc.division}</td>
+                                    <td className="px-6 py-4 text-slate-500 dark:text-slate-500 text-sm hidden lg:table-cell">{doc.date}</td>
+                                    <td className="px-6 py-4 hidden xl:table-cell">
+                                        <span className={clsx(
+                                            "px-2.5 py-1 rounded-full text-xs font-medium",
+                                            doc.classification === 'Public' ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300" : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                                        )}>
+                                            {doc.classification}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2">
+                                            {doc.isActive ? (
+                                                <span className="flex items-center gap-1.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-full">
+                                                    <CheckCircle size={12} />
+                                                    Active
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-full">
+                                                    <XCircle size={12} />
+                                                    Inactive
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => window.open(doc.fileUrl, '_blank')}
+                                                className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                                title="View Document"
+                                            >
+                                                <Eye size={18} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => setToggleId(doc.id)}
+                                                className={clsx(
+                                                    "p-2 rounded-lg transition-colors",
+                                                    doc.isActive
+                                                        ? "text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                                        : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                                )}
+                                                title={doc.isActive ? "Deactivate" : "Activate"}
+                                            >
+                                                <Power size={18} />
+                                            </button>
+
+                                            <button
+                                                onClick={() => setDeleteId(doc.id)}
+                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                title="Delete Document"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {documents.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                                        <div className="flex flex-col items-center">
+                                            <FileText size={48} className="mb-4 opacity-20" />
+                                            <p>Tidak ada dokumen ditemukan</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Delete Confirmation Modal */}
+                <ConfirmModal
+                    isOpen={!!deleteId}
+                    onClose={() => setDeleteId(null)}
+                    onConfirm={() => {
+                        if (deleteId) deleteDocument(deleteId);
+                    }}
+                    title="Hapus Dokumen?"
+                    message="Apakah Anda yakin ingin menghapus dokumen ini? Tindakan ini tidak dapat dibatalkan."
+                    confirmText="Hapus"
+                    variant="danger"
+                />
+
+                {/* Success Upload Modal */}
+                <ConfirmModal
+                    isOpen={showSuccessModal}
+                    onClose={() => setShowSuccessModal(false)}
+                    onConfirm={() => setShowSuccessModal(false)}
+                    title="Berhasil Diunggah!"
+                    message="Dokumen baru telah berhasil ditambahkan ke sistem."
+                    confirmText="OK"
+                    variant="success"
+                />
+
+                {/* Application Toggle Modal */}
+                <ConfirmModal
+                    isOpen={!!toggleId}
+                    onClose={() => setToggleId(null)}
+                    onConfirm={() => {
+                        if (toggleId) toggleDocumentStatus(toggleId);
+                    }}
+                    title={documents.find(d => d.id === toggleId)?.isActive ? "Deactivate Document?" : "Activate Document?"}
+                    message={
+                        documents.find(d => d.id === toggleId)?.isActive
+                            ? "This document will be hidden from users."
+                            : "This document will be visible to users."
+                    }
+                    confirmText={documents.find(d => d.id === toggleId)?.isActive ? "Deactivate" : "Activate"}
+                    variant={documents.find(d => d.id === toggleId)?.isActive ? "warning" : "info"}
+                />
             </div>
-
-            {/* Delete Confirmation Modal */}
-            <ConfirmModal
-                isOpen={!!deleteId}
-                onClose={() => setDeleteId(null)}
-                onConfirm={() => {
-                    if (deleteId) deleteDocument(deleteId);
-                }}
-                title="Delete Document?"
-                message="Are you sure you want to delete this document? This action cannot be undone."
-                confirmText="Delete"
-                variant="danger"
-            />
-
-            {/* Application Toggle Modal */}
-            <ConfirmModal
-                isOpen={!!toggleId}
-                onClose={() => setToggleId(null)}
-                onConfirm={() => {
-                    if (toggleId) toggleDocumentStatus(toggleId);
-                }}
-                title={documents.find(d => d.id === toggleId)?.isActive ? "Deactivate Document?" : "Activate Document?"}
-                message={
-                    documents.find(d => d.id === toggleId)?.isActive
-                        ? "This document will be hidden from users."
-                        : "This document will be visible to users."
-                }
-                confirmText={documents.find(d => d.id === toggleId)?.isActive ? "Deactivate" : "Activate"}
-                variant={documents.find(d => d.id === toggleId)?.isActive ? "warning" : "info"}
-            />
         </div>
     );
 };

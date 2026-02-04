@@ -260,6 +260,31 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+// Banner Endpoint
+app.get('/api/banner', (req, res) => {
+    // Mock Banner Data
+    res.json([
+        {
+            id: '1',
+            title: "Net Zero Emissions 2060",
+            description: "Challenge yourself to take action for a cleaner future.",
+            image_path: "https://picsum.photos/seed/business/1200/600"
+        },
+        {
+            id: '2',
+            title: "Digital Transformation",
+            description: "Embracing technology to drive efficiency.",
+            image_path: "https://picsum.photos/seed/tech/1200/600"
+        },
+        {
+            id: '3',
+            title: "Safety First",
+            description: "Prioritizing safety in every operation.",
+            image_path: "https://picsum.photos/seed/safety/1200/600"
+        }
+    ]);
+});
+
 app.listen(PORT, async () => {
     console.log('Server running on http://localhost:' + PORT);
     await loadPDFs();
