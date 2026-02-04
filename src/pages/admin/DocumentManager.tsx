@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { Trash2, FileText, Upload, Plus, Minus } from 'lucide-react';
+import { Trash2, FileText, Upload, Plus, Minus, Eye, Power, CheckCircle, XCircle } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const DocumentManager = () => {
-    const { documents, addDocument, deleteDocument } = useAdmin();
+    const { documents, addDocument, deleteDocument, toggleDocumentStatus } = useAdmin();
     const [isFormOpen, setIsFormOpen] = useState(false);
+
+    // Modal States
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+    const [toggleId, setToggleId] = useState<string | null>(null);
 
     // Form State
     const [title, setTitle] = useState('');
@@ -23,7 +28,8 @@ const DocumentManager = () => {
             type: docType,
             division,
             classification,
-            fileUrl: '#'
+            fileUrl: '#',
+            isActive: true
         });
 
         // Reset
@@ -169,6 +175,7 @@ const DocumentManager = () => {
                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Tipe</th>
                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Divisi</th>
                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Tanggal</th>
+                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Klasifikasi</th>
                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400">Status</th>
                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-400 text-right">Aksi</th>
                         </tr>
@@ -199,14 +206,52 @@ const DocumentManager = () => {
                                         {doc.classification}
                                     </span>
                                 </td>
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center gap-2">
+                                        {doc.isActive ? (
+                                            <span className="flex items-center gap-1.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-full">
+                                                <CheckCircle size={12} />
+                                                Active
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1.5 text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 px-2.5 py-1 rounded-full">
+                                                <XCircle size={12} />
+                                                Inactive
+                                            </span>
+                                        )}
+                                    </div>
+                                </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button
-                                        onClick={() => deleteDocument(doc.id)}
-                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                        title="Delete Document"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div className="flex items-center justify-end gap-2">
+                                        <button
+                                            onClick={() => window.open(doc.fileUrl, '_blank')}
+                                            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                            title="View Document"
+                                        >
+                                            <Eye size={18} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => setToggleId(doc.id)}
+                                            className={clsx(
+                                                "p-2 rounded-lg transition-colors",
+                                                doc.isActive
+                                                    ? "text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                                                    : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                            )}
+                                            title={doc.isActive ? "Deactivate" : "Activate"}
+                                        >
+                                            <Power size={18} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => setDeleteId(doc.id)}
+                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                            title="Delete Document"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -223,6 +268,36 @@ const DocumentManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={() => {
+                    if (deleteId) deleteDocument(deleteId);
+                }}
+                title="Delete Document?"
+                message="Are you sure you want to delete this document? This action cannot be undone."
+                confirmText="Delete"
+                variant="danger"
+            />
+
+            {/* Application Toggle Modal */}
+            <ConfirmModal
+                isOpen={!!toggleId}
+                onClose={() => setToggleId(null)}
+                onConfirm={() => {
+                    if (toggleId) toggleDocumentStatus(toggleId);
+                }}
+                title={documents.find(d => d.id === toggleId)?.isActive ? "Deactivate Document?" : "Activate Document?"}
+                message={
+                    documents.find(d => d.id === toggleId)?.isActive
+                        ? "This document will be hidden from users."
+                        : "This document will be visible to users."
+                }
+                confirmText={documents.find(d => d.id === toggleId)?.isActive ? "Deactivate" : "Activate"}
+                variant={documents.find(d => d.id === toggleId)?.isActive ? "warning" : "info"}
+            />
         </div>
     );
 };

@@ -25,6 +25,7 @@ export interface Document {
     classification: 'Public' | 'Private';
     date: string;
     fileUrl: string; // Mock url
+    isActive: boolean;
 }
 
 interface AdminContextType {
@@ -33,6 +34,7 @@ interface AdminContextType {
     documents: Document[];
     addDocument: (doc: Omit<Document, 'id' | 'date'>) => void;
     deleteDocument: (id: string) => void;
+    toggleDocumentStatus: (id: string) => void;
 }
 
 // Default Config
@@ -74,8 +76,8 @@ const defaultSiteConfig: SiteConfig = {
 
 // Mock Initial Documents
 const initialDocuments: Document[] = [
-    { id: '1', title: 'Q1 Financial Report', type: 'SKD', division: 'Finance', classification: 'Private', date: '2024-03-01', fileUrl: '#' },
-    { id: '2', title: 'Employee Handbook 2024', type: 'SOP', division: 'HR', classification: 'Public', date: '2024-01-15', fileUrl: '#' },
+    { id: '1', title: 'Q1 Financial Report', type: 'SKD', division: 'Finance', classification: 'Private', date: '2024-03-01', fileUrl: '#', isActive: true },
+    { id: '2', title: 'Employee Handbook 2024', type: 'SOP', division: 'HR', classification: 'Public', date: '2024-01-15', fileUrl: '#', isActive: true },
 ];
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -101,8 +103,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setDocuments(prev => prev.filter(d => d.id !== id));
     };
 
+    const toggleDocumentStatus = (id: string) => {
+        setDocuments(prev => prev.map(doc =>
+            doc.id === id ? { ...doc, isActive: !doc.isActive } : doc
+        ));
+    };
+
     return (
-        <AdminContext.Provider value={{ siteConfig, updateSiteConfig, documents, addDocument, deleteDocument }}>
+        <AdminContext.Provider value={{ siteConfig, updateSiteConfig, documents, addDocument, deleteDocument, toggleDocumentStatus }}>
             {children}
         </AdminContext.Provider>
     );

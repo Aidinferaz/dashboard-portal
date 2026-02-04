@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, Trash2, Edit2, Shield, Filter, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 import { User, UserRole } from '../../context/AuthContext';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 // Mock Data
 const MOCK_USERS: User[] = [
@@ -38,6 +39,7 @@ const UserManagement = () => {
     const [users, setUsers] = useState<User[]>(MOCK_USERS);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedRole, setSelectedRole] = useState<UserRole | 'all'>('all');
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const filteredUsers = users.filter(user => {
         const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,8 +49,13 @@ const UserManagement = () => {
     });
 
     const handleDelete = (id: string) => {
-        if (confirm('Apakah Anda yakin ingin menghapus pengguna ini?')) {
-            setUsers(prev => prev.filter(u => u.id !== id));
+        setDeleteId(id);
+    };
+
+    const confirmDelete = () => {
+        if (deleteId) {
+            setUsers(prev => prev.filter(u => u.id !== deleteId));
+            setDeleteId(null);
         }
     };
 
@@ -174,6 +181,16 @@ const UserManagement = () => {
                     </div>
                 )}
             </div>
+
+            <ConfirmModal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={confirmDelete}
+                title="Hapus Pengguna?"
+                message="Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Hapus"
+                variant="danger"
+            />
         </div>
     );
 };

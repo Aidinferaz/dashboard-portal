@@ -3,22 +3,72 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import SmoothImage from './ui/SmoothImage';
 
-import { useAdmin } from '../context/AdminContext';
+
 
 const FeatureCarousel = () => {
-    const { siteConfig } = useAdmin();
+
     const [current, setCurrent] = useState(0);
 
-    const slides = siteConfig.heroBanners.length > 0 ? siteConfig.heroBanners : [
-        // Fallback if empty
-        {
-            id: 'fallback-1',
-            title: "Welcome to Dashboard",
-            subtitle: "Configure your banners in Site Config",
-            color: "from-slate-700 to-slate-900",
-            image: ""
-        }
-    ];
+    const [slides, setSlides] = useState<any[]>([{
+        id: 'loading',
+        title: "Loading...",
+        subtitle: "Please wait",
+        color: "from-slate-700 to-slate-900",
+        image: ""
+    }]);
+
+    useEffect(() => {
+        const fetchBanner = async () => {
+            try {
+                const res = await fetch('https://tt772cdzx3b7vl-3000.proxy.runpod.net/api/banner');
+                const data = await res.json();
+
+                if (Array.isArray(data) && data.length > 0) {
+                    const mappedSlides = data.map((item: any) => {
+                        let imageUrl = item.image_path;
+                        if (!imageUrl.startsWith('http')) {
+                            imageUrl = `https://tt772cdzx3b7vl-3000.proxy.runpod.net/${imageUrl}`;
+                        }
+
+                        return {
+                            id: String(item.id),
+                            title: item.title,
+                            subtitle: item.description,
+                            color: "from-blue-900 to-slate-900", // Can alternate colors if needed
+                            image: imageUrl
+                        };
+                    });
+                    setSlides(mappedSlides);
+                } else if (data && data.image_path) {
+                    // Fallback for single object response (backward compatibility)
+                    let imageUrl = data.image_path;
+                    if (!imageUrl.startsWith('http')) {
+                        imageUrl = `http://localhost:3000/${imageUrl}`;
+                    }
+
+                    setSlides([{
+                        id: String(data.id),
+                        title: data.title,
+                        subtitle: data.description,
+                        color: "from-blue-900 to-slate-900",
+                        image: imageUrl
+                    }]);
+                } else {
+                    // Fallback
+                    setSlides([{
+                        id: 'fallback-1',
+                        title: "Welcome to Dashboard",
+                        subtitle: "No active banner found.",
+                        color: "from-slate-700 to-slate-900",
+                        image: ""
+                    }]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch banner:", err);
+            }
+        };
+        fetchBanner();
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {

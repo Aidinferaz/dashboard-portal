@@ -27,6 +27,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { Grid, Check, X, Search } from 'lucide-react'; // Import UI icons explicitly
 import { useAuth } from '../context/AuthContext';
+import ConfirmModal from './ui/ConfirmModal';
 
 // Type definition simulating backend response
 type Service = {
@@ -152,6 +153,7 @@ const BentoGrid = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const { user } = useAuth();
     const isSuperAdmin = user?.role === 'super_admin';
 
@@ -264,11 +266,13 @@ const BentoGrid = () => {
     };
 
     const handleReset = () => {
-        if (confirm("Reset layout to default?")) {
-            setServices(defaultServices);
-            localStorage.removeItem('blink_services_order');
-            setIsEditing(false);
-        }
+        setIsResetModalOpen(true);
+    };
+
+    const confirmReset = () => {
+        setServices(defaultServices);
+        localStorage.removeItem('blink_services_order');
+        setIsEditing(false);
     };
 
     const activeService = services.find(s => s.id === activeId);
@@ -378,6 +382,16 @@ const BentoGrid = () => {
                     </DragOverlay>
                 </DndContext>
             )}
+
+            <ConfirmModal
+                isOpen={isResetModalOpen}
+                onClose={() => setIsResetModalOpen(false)}
+                onConfirm={confirmReset}
+                title="Reset Layout?"
+                message="This will reset the application grid to its default arrangement. Your custom changes will be lost."
+                confirmText="Reset Layout"
+                variant="warning"
+            />
         </div>
     );
 };

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAdmin, SiteConfig as SiteConfigType, Banner } from '../../context/AdminContext';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
 import { Trash2, Plus, Image as ImageIcon, Save, Edit2, X } from 'lucide-react';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,6 +25,8 @@ const SiteConfig = () => {
         image: '',
         color: 'from-blue-600 to-indigo-600'
     });
+
+    const [deleteItem, setDeleteItem] = useState<{ id: string, type: 'hero' | 'popup' } | null>(null);
 
     // Reset draft when global config changes
     useEffect(() => {
@@ -62,15 +65,21 @@ const SiteConfig = () => {
     };
 
     const handleDelete = (id: string, type: 'hero' | 'popup') => {
-        if (confirm("Hapus item ini?")) {
-            setDraftConfig(prev => {
-                const listKey = type === 'hero' ? 'heroBanners' : 'popupBanners';
-                const currentList = prev[listKey] || [];
-                const newList = currentList.filter(b => b.id !== id);
-                return { ...prev, [listKey]: newList };
-            });
-            setIsDirty(true);
-        }
+        setDeleteItem({ id, type });
+    };
+
+    const confirmDelete = () => {
+        if (!deleteItem) return;
+
+        const { id, type } = deleteItem;
+        setDraftConfig(prev => {
+            const listKey = type === 'hero' ? 'heroBanners' : 'popupBanners';
+            const currentList = prev[listKey] || [];
+            const newList = currentList.filter(b => b.id !== id);
+            return { ...prev, [listKey]: newList };
+        });
+        setIsDirty(true);
+        setDeleteItem(null);
     };
 
     const saveTempBanner = () => {
@@ -315,6 +324,16 @@ const SiteConfig = () => {
                 </AnimatePresence>
 
             </div>
+
+            <ConfirmModal
+                isOpen={!!deleteItem}
+                onClose={() => setDeleteItem(null)}
+                onConfirm={confirmDelete}
+                title="Hapus Banner?"
+                message="Apakah Anda yakin ingin menghapus banner ini? Tindakan ini tidak dapat dibatalkan setelah disimpan."
+                confirmText="Hapus"
+                variant="danger"
+            />
         </div>
     );
 };
