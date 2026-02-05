@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Maximize2, Minimize2, Sparkles, MessageSquare } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import clsx from 'clsx';
 import BilaLogo from '../assets/bila-ai.png';
 
@@ -10,6 +9,7 @@ interface Message {
     id: string;
     text: string;
     sender: 'user' | 'bot';
+    source_documents?: any[];
     timestamp: Date;
 }
 
@@ -82,12 +82,14 @@ const Chatbot = () => {
             }
 
             const fullText = data.reply || "Maaf, saya tidak mendapatkan respons.";
+            const sources = data?.source_documents || [];
 
             const botMessageId = (Date.now() + 1).toString();
             const botMessage: Message = {
                 id: botMessageId,
                 text: "",
                 sender: 'bot',
+                source_documents: sources,
                 timestamp: new Date()
             };
 
@@ -96,20 +98,20 @@ const Chatbot = () => {
 
             // Streaming Effect
             let currentText = "";
-            const words = fullText.split(' ');
-            let wordIndex = 0;
+            // const words = fullText.split(' ');
+            let charIndex = 0;
 
             const streamInterval = setInterval(() => {
-                if (wordIndex < words.length) {
-                    currentText += (wordIndex === 0 ? "" : " ") + words[wordIndex];
+                if (charIndex < fullText.length) {
+                    currentText += fullText[charIndex];
                     setMessages(prev => prev.map(m =>
                         m.id === botMessageId ? { ...m, text: currentText } : m
                     ));
-                    wordIndex++;
+                    charIndex++;
                 } else {
                     clearInterval(streamInterval);
                 }
-            }, 50);
+            }, 10);
 
         } catch (error) {
             console.error('Chat error:', error);
@@ -124,10 +126,9 @@ const Chatbot = () => {
         }
     };
 
-
-
     return (
         <>
+            {/* Toggle Button */}
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
@@ -155,6 +156,7 @@ const Chatbot = () => {
                 )}
             </AnimatePresence>
 
+            {/* Chat Window */}
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
@@ -172,6 +174,7 @@ const Chatbot = () => {
                                 : "bottom-4 left-4 right-4 h-[500px] sm:left-auto sm:right-6 sm:bottom-6 sm:w-96 sm:h-[550px] rounded-3xl bg-white/90 dark:bg-slate-900/90"
                         )}
                     >
+                        {/* Header */}
                         <div className="relative bg-teal-50 dark:bg-slate-800 p-4 flex items-center justify-between border-b border-teal-100 dark:border-slate-700">
                             <div className="flex items-center gap-3">
                                 <div className="relative">
@@ -211,6 +214,7 @@ const Chatbot = () => {
                             </div>
                         </div>
 
+                        {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                             <div className="flex justify-center my-2">
                                 <span className="text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full">
@@ -228,7 +232,11 @@ const Chatbot = () => {
                                         msg.sender === 'user' ? "justify-end" : "justify-start"
                                     )}
                                 >
-                                    <div className={clsx("flex max-w-[85%] gap-2", msg.sender === 'user' ? "flex-row-reverse" : "flex-row")}>
+                                    <div className={clsx(
+                                        "flex max-w-[85%] gap-2",
+                                        msg.sender === 'user' ? "flex-row-reverse" : "flex-row"
+                                    )}>
+                                        {/* Avatar for Bot */}
                                         {msg.sender === 'bot' && (
                                             <div className="w-8 h-8 rounded-full bg-teal-50 p-0.5 mt-auto flex-shrink-0 border border-teal-100">
                                                 <img src={BilaLogo} className="w-full h-full rounded-full object-cover bg-white" alt="Bila" />
@@ -244,25 +252,57 @@ const Chatbot = () => {
                                             )}
                                         >
                                             <div className="font-normal">
-                                                <div className="font-normal markdown-content">
-                                                    {msg.sender === 'bot' ? (
-                                                        msg.text || (!isLoading ? "" : <span className="italic opacity-50">Mengetik...</span>) ? (
-                                                            <ReactMarkdown
-                                                                remarkPlugins={[remarkGfm]}
-                                                                components={{
-                                                                    ul: ({ node, ...props }) => <ul className="list-disc pl-4 my-2" {...props} />,
-                                                                    ol: ({ node, ...props }) => <ol className="list-decimal pl-4 my-2" {...props} />,
-                                                                    p: ({ node, ...props }) => <p className="mb-[2px] last:mb-0 leading-tight" {...props} />,
-                                                                    strong: ({ node, ...props }) => <span className="font-bold text-teal-600 dark:text-teal-400" {...props} />
-                                                                }}
-                                                            >
-                                                                {msg.text}
-                                                            </ReactMarkdown>
-                                                        ) : <span className="italic opacity-50">Mengetik...</span>
-                                                    ) : (
-                                                        msg.text
-                                                    )}
-                                                </div>
+                                                {msg.sender === 'bot' ? (
+                                                    // Tambahkan class [&>*:first-child]:mt-0 agar elemen pertama tidak punya margin atas
+                                                    <div className="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-200 leading-relaxed [&>*:first-child]:mt-0">
+                                                        <ReactMarkdown
+                                                            components={{
+                                                                // Tweaking margin agar lebih rapat
+                                                                p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                                ul: ({ node, ...props }) => <ul className="list-disc ml-4 mb-2 space-y-1" {...props} />,
+                                                                ol: ({ node, ...props }) => <ol className="list-decimal ml-4 mb-2 space-y-1" {...props} />,
+                                                                li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                                                                h1: ({ node, ...props }) => <h1 className="font-bold text-lg mb-2 mt-4" {...props} />,
+                                                                h2: ({ node, ...props }) => <h2 className="font-bold text-base mb-2 mt-3" {...props} />,
+                                                                h3: ({ node, ...props }) => <h3 className="font-bold text-sm mb-1 mt-2 uppercase text-teal-600 dark:text-teal-400" {...props} />,
+                                                                strong: ({ node, ...props }) => <strong className="font-bold text-slate-900 dark:text-white" {...props} />,
+                                                                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-teal-500 pl-4 py-1 italic bg-slate-50 dark:bg-slate-800/50 rounded-r my-2" {...props} />,
+                                                                code: ({ node, ...props }) => <code className="bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-xs font-mono text-pink-500" {...props} />,
+                                                            }}
+                                                        >
+                                                            {msg.text || (isLoading ? "Mengetik..." : "")}
+                                                        </ReactMarkdown>
+                                                    </div>
+                                                ) : (
+                                                    msg.text
+                                                )}
+
+                                                {/* Render Sources for Bot (LOGIC FIXED) */}
+                                                {msg.sender === 'bot' && msg.source_documents && msg.source_documents.length > 0 && (
+                                                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-2 flex items-center gap-1">
+                                                            <Sparkles className="w-3 h-3" /> Referensi Dokumen
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {/* Logic deduplikasi yang lebih aman */}
+                                                            {(() => {
+                                                                const seen = new Set();
+                                                                return msg.source_documents.map((doc: any, idx: number) => {
+                                                                    // Buat identifier unik: NamaFile + Halaman
+                                                                    const uniqueKey = `${doc.source}-${doc.page}`;
+                                                                    if (seen.has(uniqueKey)) return null;
+                                                                    seen.add(uniqueKey);
+
+                                                                    return (
+                                                                        <span key={idx} className="inline-flex items-center gap-1 bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-800 text-teal-700 dark:text-teal-300 px-2 py-1 rounded-md text-[10px] font-medium">
+                                                                            📄 {doc.source}
+                                                                        </span>
+                                                                    );
+                                                                }).filter(Boolean); // Hapus null hasil duplikat
+                                                            })()}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className={clsx(
                                                 "text-[10px] mt-2 block opacity-60 font-medium text-right uppercase tracking-tighter",
@@ -310,6 +350,7 @@ const Chatbot = () => {
                             <div ref={messagesEndRef} />
                         </div>
 
+                        {/* Input Area */}
                         <div className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800">
                             <form
                                 onSubmit={handleSendMessage}
