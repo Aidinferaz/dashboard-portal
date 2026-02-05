@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from 'react';
-
 import * as LucideIcons from 'lucide-react';
 import clsx from 'clsx';
 import {
@@ -28,6 +26,9 @@ import { CSS } from '@dnd-kit/utilities';
 import { Grid, Check, X, Search } from 'lucide-react'; // Import UI icons explicitly
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ui/ConfirmModal';
+
+import { supabase } from '../lib/supabase';
+
 
 // Type definition simulating backend response
 type Service = {
@@ -93,10 +94,7 @@ const ServiceCard = ({ service, isEditing, isOverlay = false }: { service: Servi
                 isOverlay && "shadow-2xl scale-105 ring-2 ring-primary/50 cursor-grabbing bg-white/95 backdrop-blur-xl z-50 transform-gpu"
             )}
         >
-            {/* Shimmer Effect (Only in view mode)
-            {!isEditing && !isOverlay && (
-                <div className="absolute inset-0 translate-x-[-100%] group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent z-10 pointer-events-none" />
-            )} */}
+
 
             {/* Edit Mode Indicator */}
             {isEditing && (
@@ -181,13 +179,18 @@ const BentoGrid = () => {
     useEffect(() => {
         const fetchServices = async () => {
             try {
-                const response = await fetch('https://pd2wporwvhijs3-3000.proxy.runpod.net/api/apps');
-                if (!response.ok) throw new Error('Failed to fetch');
-                const data = await response.json();
+                // Fetch from Supabase
+                const { data, error } = await supabase
+                    .from('apps')
+                    .select('*');
+
+                if (error) {
+                    throw error;
+                }
 
                 // Map DB data to frontend model
-                const mappedServices: Service[] = data.map((item: any, index: number) => ({
-                    id: String(item.Id),
+                const mappedServices: Service[] = (data || []).map((item: any, index: number) => ({
+                    id: String(item.id), // Ensure column names match your DB (case-sensitive)
                     title: item.Nama_Aplikasi || 'No Title',
                     description: item.Deskripsi || item.Deskripsi_Aplikasi || '',
                     icon: item.Icon || 'FolderKanban',
