@@ -5,10 +5,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Missing Supabase environment variables. Please check your .env file.');
+    console.error("Missing Supabase environment variables! Check your .env file.");
 }
 
+// Prevent crash by providing dummy text if missing, but it will fail on request
 export const supabase = createClient(
-    supabaseUrl || '',
-    supabaseAnonKey || ''
+    supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey || 'placeholder-key'
 );

@@ -180,21 +180,26 @@ const BentoGrid = () => {
         const fetchServices = async () => {
             try {
                 // Fetch from Supabase
+                console.log("🔄 Fetching apps from Supabase...");
                 const { data, error } = await supabase
-                    .from('apps')
+                    .from('aplikasi')
                     .select('*');
 
                 if (error) {
+                    console.error("❌ Supabase Connection Error:", error.message, error.details); // Helpful log
                     throw error;
                 }
 
+                console.log("✅ Supabase Connected! Data:", data); // Success log
+
                 // Map DB data to frontend model
                 const mappedServices: Service[] = (data || []).map((item: any, index: number) => ({
-                    id: String(item.id), // Ensure column names match your DB (case-sensitive)
-                    title: item.Nama_Aplikasi || 'No Title',
-                    description: item.Deskripsi || item.Deskripsi_Aplikasi || '',
-                    icon: item.Icon || 'FolderKanban',
-                    link: item.Link || '#',
+                    id: String(item.id),
+                    // Handle both snake_case (Supabase default) and PascalCase (if relevant or legacy)
+                    title: item.nama_aplikasi || item.Nama_Aplikasi || 'No Title',
+                    description: item.deskripsi_aplikasi || item.Deskripsi || item.Deskripsi_Aplikasi || '',
+                    icon: item.icon || item.Icon || 'FolderKanban',
+                    link: item.link || item.Link || '#',
                     // Cycle through colors
                     color: COLOR_PALETTE[index % COLOR_PALETTE.length]
                 })).filter((s: Service) => s.id && s.title && s.title !== 'No Title');

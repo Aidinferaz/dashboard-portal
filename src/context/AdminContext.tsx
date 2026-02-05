@@ -105,8 +105,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
             setDocuments(data.map((doc: any) => ({
                 id: doc.id,
-                title: doc.title,
-                type: doc.title.toLowerCase().includes('sop') ? 'SOP' : 'SKD',
+                title: doc.title || 'Untitled',
+                type: (doc.title || '').toLowerCase().includes('sop') ? 'SOP' : 'SKD',
                 division: doc.division,
                 classification: doc.classification || 'Public',
                 date: doc.date || new Date().toISOString().split('T')[0],
