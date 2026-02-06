@@ -4,7 +4,7 @@ import { Eye, EyeOff, RefreshCw, Code2, Shield, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/BGR_logo.png';
 
-const API_URL = "https://34896ba195465a.lhr.life";
+const API_URL = "https://f9eb0e1778a875.lhr.life";
 
 const Login = () => {
     const navigate = useNavigate();
