@@ -4,7 +4,8 @@ import { Eye, EyeOff, RefreshCw, Code2, Shield, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/BGR_logo.png';
 
-const API_URL = "https://f9eb0e1778a875.lhr.life";
+// Reverted to localhost because lhr.life is blocked by FortiGuard
+const API_URL = "http://localhost:5000";
 
 const Login = () => {
     const navigate = useNavigate();
@@ -33,7 +34,9 @@ const Login = () => {
         setErrorMsg("");
 
         try {
-            console.log(`Attempting login to: ${API_URL}/login`);
+            console.log(`🚀 Attempting login to: ${API_URL}/login`);
+            console.log("Payload:", { nik: formData.nik, password: '***' });
+
             const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -43,19 +46,22 @@ const Login = () => {
                 })
             });
 
+            console.log(`📡 Response Status: ${response.status} ${response.statusText}`);
             const data = await response.json();
+            console.log("📦 Response Data:", data);
 
             if (response.ok) {
-                console.log("Login Success!");
+                console.log("✅ Login Success!");
                 localStorage.setItem('blink_token', data.token);
                 localStorage.setItem('blink_user', JSON.stringify(data.user));
                 navigate('/');
             } else {
+                console.warn("⚠️ Login Failed:", data.message);
                 setErrorMsg(data.message || "Login failed");
             }
         } catch (error) {
-            console.error("Connection Error:", error);
-            setErrorMsg("Cannot connect to the server. Is backend running?");
+            console.error("❌ Connection Error (Network/CORS?):", error);
+            setErrorMsg("Cannot connect to the server. Check console for details.");
         } finally {
             setIsLoading(false);
         }

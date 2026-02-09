@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useAdmin, SiteConfig as SiteConfigType, Banner } from '../../context/AdminContext';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
 import { Trash2, Plus, Image as ImageIcon, Save, Edit2, X } from 'lucide-react';
-import ConfirmModal from '../../components/ui/ConfirmModal';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,6 +17,7 @@ const SiteConfig = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingType, setEditingType] = useState<'hero' | 'popup'>('hero'); // Track what we are editing
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [tempBanner, setTempBanner] = useState<Banner>({
         id: '',
         title: '',
@@ -26,12 +26,192 @@ const SiteConfig = () => {
         color: 'from-blue-600 to-indigo-600'
     });
 
-    const [deleteItem, setDeleteItem] = useState<{ id: string, type: 'hero' | 'popup' } | null>(null);
+    // DB Upload State
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [dbBanners, setDbBanners] = useState<any[]>([]);
+    const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
 
-    // Reset draft when global config changes
+    // --- POPUP DB STATE (MySQL) ---
+    const [dbPopups, setDbPopups] = useState<any[]>([]);
+    const [popupFile, setPopupFile] = useState<File | null>(null);
+    const [popupUrl, setPopupUrl] = useState('');
+    const [popupUploadMode, setPopupUploadMode] = useState<'file' | 'url'>('file');
+    const [isUploadingPopup, setIsUploadingPopup] = useState(false);
+
+    // Initial Fetch of Current Banner
     useEffect(() => {
         setDraftConfig(siteConfig);
+        fetchCurrentBanner();
+        fetchPopups();
     }, []);
+
+    // Sync draft with global config updates (e.g. initial fetch async)
+    useEffect(() => {
+        setDraftConfig(prev => ({ ...prev, popupActive: siteConfig.popupActive }));
+    }, [siteConfig.popupActive]);
+
+    const fetchCurrentBanner = async () => {
+        try {
+            const res = await fetch('http://localhost:3000/api/banner');
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setDbBanners(data);
+            } else if (data && data.image_path) {
+                setDbBanners([data]);
+            } else {
+                setDbBanners([]);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDeleteDbBanner = async (id: string) => {
+        if (!confirm("Hapus banner ini?")) return;
+        try {
+            const res = await fetch(`http://localhost:3000/api/banner/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                fetchCurrentBanner();
+            } else {
+                alert("Gagal menghapus banner");
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleFileSelect = (file: File) => {
+        setSelectedFile(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setTempBanner(prev => ({ ...prev, image: e.target?.result as string }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // --- POPUP CRUD (MySQL) ---
+    const fetchPopups = async () => {
+        try {
+            const res = await fetch('http://localhost:3000/api/popups');
+            const data = await res.json();
+            setDbPopups(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to fetch popups", err);
+        }
+    };
+
+    // --- Banner CRUD Helpers ---
+    const handlePopupUpload = async () => {
+        if (popupUploadMode === 'file' && !popupFile) return alert("Pilih file gambar dulu!");
+        if (popupUploadMode === 'url' && !popupUrl) return alert("Masukan URL gambar!");
+
+        setIsUploadingPopup(true);
+        try {
+            let res;
+            if (popupUploadMode === 'file' && popupFile) {
+                const formData = new FormData();
+                formData.append('image', popupFile);
+                res = await fetch('http://localhost:3000/api/popups', {
+                    method: 'POST',
+                    body: formData
+                });
+            } else {
+                res = await fetch('http://localhost:3000/api/popups', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl: popupUrl })
+                });
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                alert("Popup berhasil ditambahkan");
+                fetchPopups();
+                setPopupFile(null);
+                setPopupUrl('');
+            } else {
+                alert("Gagal upload: " + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error upload popup");
+        } finally {
+            setIsUploadingPopup(false);
+        }
+    };
+
+    const handleDeletePopup = async (id: string) => {
+        if (!confirm("Hapus popup ini?")) return;
+        try {
+            const res = await fetch(`http://localhost:3000/api/popups/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                fetchPopups();
+            } else {
+                alert("Gagal menghapus popup");
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleBannerDbUpload = async () => {
+        if (uploadMode === 'file' && !selectedFile) return alert("Pilih file gambar dulu!");
+        if (uploadMode === 'url' && !tempBanner.image) return alert("Masukan URL gambar!");
+
+        setIsUploading(true); // Loading
+
+        try {
+            let res;
+            if (uploadMode === 'file' && selectedFile) {
+                const formData = new FormData();
+                formData.append('title', tempBanner.title);
+                formData.append('description', tempBanner.subtitle);
+                formData.append('image', selectedFile);
+
+                res = await fetch('http://localhost:3000/api/banner', {
+                    method: 'POST',
+                    body: formData
+                });
+            } else {
+                // URL Mode
+                res = await fetch('http://localhost:3000/api/banner', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: tempBanner.title,
+                        description: tempBanner.subtitle,
+                        imageUrl: tempBanner.image
+                    })
+                });
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                alert("Banner berhasil ditambahkan");
+                fetchCurrentBanner();
+                setSelectedFile(null);
+                setTempBanner({
+                    id: '',
+                    title: '',
+                    subtitle: '',
+                    image: '',
+                    color: 'from-slate-700 to-slate-900'
+                });
+            } else {
+                alert("Gagal upload: " + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error upload");
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSaveAll = () => {
         updateSiteConfig(draftConfig);
@@ -65,26 +245,18 @@ const SiteConfig = () => {
     };
 
     const handleDelete = (id: string, type: 'hero' | 'popup') => {
-        setDeleteItem({ id, type });
-    };
-
-    const confirmDelete = () => {
-        if (!deleteItem) return;
-
-        const { id, type } = deleteItem;
-        setDraftConfig(prev => {
-            const listKey = type === 'hero' ? 'heroBanners' : 'popupBanners';
-            const currentList = prev[listKey] || [];
-            const newList = currentList.filter(b => b.id !== id);
-            return { ...prev, [listKey]: newList };
-        });
-        setIsDirty(true);
-        setDeleteItem(null);
+        if (confirm("Hapus item ini?")) {
+            setDraftConfig(prev => {
+                const listKey = type === 'hero' ? 'heroBanners' : 'popupBanners';
+                const currentList = prev[listKey] || [];
+                const newList = currentList.filter(b => b.id !== id);
+                return { ...prev, [listKey]: newList };
+            });
+            setIsDirty(true);
+        }
     };
 
     const saveTempBanner = () => {
-        // Validation check? maybe just allow empty title
-
         setDraftConfig(prev => {
             const listKey = editingType === 'hero' ? 'heroBanners' : 'popupBanners';
             // Defensive coding: ensure array exists
@@ -142,34 +314,29 @@ const SiteConfig = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
 
-                {/* --- HERO BANNER CONFIG --- */}
+                {/* --- HERO BANNER CONFIG (DB CONNECTED) --- */}
                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Hero Banner Slider</h2>
-                        <button
-                            onClick={() => handleAdd('hero')}
-                            className="text-sm bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-2"
-                        >
-                            <Plus size={16} /> Tambah
-                        </button>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Hero Banner (Database)</h2>
                     </div>
 
-                    {/* Banner List */}
-                    <div className="space-y-4">
-                        {draftConfig?.heroBanners?.map((banner, index) => (
-                            <div key={banner.id} className="group relative bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 flex gap-4 items-center">
-                                <div className={`w-20 h-14 rounded-lg bg-gradient-to-br ${banner.color} shrink-0 overflow-hidden`}>
-                                    {banner.image && <img src={banner.image} className="w-full h-full object-cover opacity-50 mix-blend-overlay" />}
+                    {/* DB Banner List */}
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        {dbBanners.map((banner, index) => (
+                            <div key={banner.id} className="group relative bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-700 flex gap-4 items-center">
+                                <div className="w-20 h-14 rounded-lg bg-slate-200 shrink-0 overflow-hidden relative">
+                                    <img src={banner.image_path.startsWith('http') ? banner.image_path : `http://localhost:3000/${banner.image_path}`} className="w-full h-full object-cover" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="font-bold text-slate-800 dark:text-white truncate">{banner.title}</h4>
-                                    <p className="text-xs text-slate-500 truncate">{banner.subtitle}</p>
+                                    <p className="text-xs text-slate-500 truncate">{banner.description}</p>
                                 </div>
-                                <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleEdit(banner, 'hero')} className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-primary transition-colors">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => handleDelete(banner.id, 'hero')} className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-red-500 transition-colors">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleDeleteDbBanner(banner.id)}
+                                        className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-red-500 transition-colors"
+                                        title="Hapus Banner"
+                                    >
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -178,69 +345,194 @@ const SiteConfig = () => {
                                 </div>
                             </div>
                         ))}
+                        {dbBanners.length === 0 && (
+                            <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                                <ImageIcon className="mx-auto mb-2 opacity-50" size={32} />
+                                <p>Belum ada banner aktif.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* DB Banner Upload Form */}
+                    <div className="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-4">
+                        <h3 className="font-bold text-slate-700 dark:text-slate-300">Upload Banner Baru</h3>
+
+                        {/* Preview New Banner */}
+                        {tempBanner.image && (
+                            <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 relative aspect-[21/9]">
+                                <img src={tempBanner.image} className="w-full h-full object-cover" />
+                                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                                    <p className="text-white font-bold">{tempBanner.title}</p>
+                                    <p className="text-white/80 text-sm">{tempBanner.subtitle}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Judul Banner</label>
+                                <input
+                                    type="text"
+                                    value={tempBanner.title}
+                                    onChange={(e) => setTempBanner({ ...tempBanner, title: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    placeholder="Judul..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Deskripsi</label>
+                                <input
+                                    type="text"
+                                    value={tempBanner.subtitle}
+                                    onChange={(e) => setTempBanner({ ...tempBanner, subtitle: e.target.value })}
+                                    className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    placeholder="Deskripsi..."
+                                />
+                            </div>
+                        </div>
+                        {/* Upload Mode Toggle */}
+                        <div className="flex gap-4 mb-4">
+                            <button
+                                onClick={() => setUploadMode('file')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${uploadMode === 'file' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                            >
+                                Upload File
+                            </button>
+                            <button
+                                onClick={() => setUploadMode('url')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${uploadMode === 'url' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                            >
+                                Link URL
+                            </button>
+                        </div>
+
+                        {uploadMode === 'file' ? (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">File Gambar (Lokal)</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        if (e.target.files?.[0]) handleFileSelect(e.target.files[0]);
+                                    }}
+                                    className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 mb-1">Link URL Gambar (Eksternal)</label>
+                                <input
+                                    type="text"
+                                    value={tempBanner.image}
+                                    onChange={(e) => setTempBanner({ ...tempBanner, image: e.target.value })} // Provide immediate preview
+                                    placeholder="https://example.com/image.jpg"
+                                    className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                                <p className="text-[10px] text-slate-400 mt-1">*Pastikan link gambar dapat diakses publik</p>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleBannerDbUpload}
+                            disabled={isUploading}
+                            className="w-full py-2 bg-primary hover:bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                        >
+                            {isUploading ? 'Mengupload...' : <><Plus size={18} /> Tambahkan Banner</>}
+                        </button>
                     </div>
                 </div>
 
-                {/* --- POPUP CONFIG --- */}
+                {/* --- POPUP CONFIG (MySQL) --- */}
                 <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 space-y-6">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Popup Kampanye</h2>
-                        <ToggleSwitch
-                            isOn={draftConfig.popupActive}
-                            onToggle={() => updatePopupConfig({ popupActive: !draftConfig.popupActive })}
-                        />
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Popup Kampanye (Database)</h2>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-slate-500">
+                                {draftConfig.popupActive ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                            <ToggleSwitch
+                                isOn={draftConfig.popupActive}
+                                onToggle={() => updatePopupConfig({ popupActive: !draftConfig.popupActive })}
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Judul Jendela</label>
-                            <input
-                                type="text"
-                                value={draftConfig.popupTitle || ''}
-                                onChange={(e) => updatePopupConfig({ popupTitle: e.target.value })}
-                                className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            />
+                        {/* List Popups */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {dbPopups.map((popup) => (
+                                <div key={popup.id} className="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 aspect-video bg-slate-100 dark:bg-slate-900">
+                                    <img
+                                        src={popup.image_path.startsWith('http') ? popup.image_path : `http://localhost:3000/${popup.image_path}`}
+                                        className="w-full h-full object-cover"
+                                        alt="Popup"
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            onClick={() => handleDeletePopup(popup.id)}
+                                            className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                            title="Hapus Popup"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
+                        {dbPopups.length === 0 && (
+                            <div className="py-8 text-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                                <ImageIcon className="mx-auto mb-2 opacity-50" size={32} />
+                                <p>Belum ada popup.</p>
+                            </div>
+                        )}
 
-                        {/* Valid Popup Banners List */}
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Slide Pengumuman</label>
+                        {/* Upload Form */}
+                        <div className="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-4">
+                            <h3 className="font-bold text-slate-700 dark:text-slate-300">Tambah Popup Baru</h3>
+
+                            <div className="flex gap-4 mb-2">
                                 <button
-                                    onClick={() => handleAdd('popup')}
-                                    className="text-xs bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-lg font-medium transition-colors flex items-center gap-1"
+                                    onClick={() => setPopupUploadMode('file')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${popupUploadMode === 'file' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                 >
-                                    <Plus size={14} /> Tambah
+                                    Upload File
+                                </button>
+                                <button
+                                    onClick={() => setPopupUploadMode('url')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${popupUploadMode === 'url' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                >
+                                    Link URL
                                 </button>
                             </div>
 
-                            <div className="space-y-3">
-                                {draftConfig.popupBanners?.map((banner) => (
-                                    <div key={banner.id} className="group relative bg-slate-50 dark:bg-slate-900 rounded-xl p-3 border border-slate-200 dark:border-slate-700 flex gap-4 items-center">
-                                        <div className={`w-16 h-12 rounded-lg bg-gradient-to-br ${banner.color} shrink-0 overflow-hidden`}>
-                                            {banner.image && <img src={banner.image} className="w-full h-full object-cover" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-bold text-slate-800 dark:text-white truncate">{banner.title || "(Tanpa Judul)"}</h4>
-                                            <p className="text-[10px] text-slate-500 truncate">{banner.subtitle}</p>
-                                        </div>
-                                        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => handleEdit(banner, 'popup')} className="p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-primary transition-colors">
-                                                <Edit2 size={14} />
-                                            </button>
-                                            <button onClick={() => handleDelete(banner.id, 'popup')} className="p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-500 hover:text-red-500 transition-colors">
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                                {(!draftConfig.popupBanners || draftConfig.popupBanners.length === 0) && (
-                                    <div className="py-6 flex flex-col items-center justify-center text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                                        <ImageIcon size={24} className="mb-2 opacity-50" />
-                                        <span className="text-sm text-center">Belum ada pengumuman.<br />Klik Tambah.</span>
-                                    </div>
-                                )}
-                            </div>
+                            {popupUploadMode === 'file' ? (
+                                <div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => setPopupFile(e.target.files?.[0] || null)}
+                                        className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                    />
+                                </div>
+                            ) : (
+                                <div>
+                                    <input
+                                        type="text"
+                                        value={popupUrl}
+                                        onChange={(e) => setPopupUrl(e.target.value)}
+                                        placeholder="https://example.com/popup.jpg"
+                                        className="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    />
+                                </div>
+                            )}
+
+                            <button
+                                onClick={handlePopupUpload}
+                                disabled={isUploadingPopup}
+                                className="w-full py-2 bg-primary hover:bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
+                            >
+                                {isUploadingPopup ? 'Mengupload...' : <><Plus size={18} /> Upload Popup</>}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -257,12 +549,13 @@ const SiteConfig = () => {
                             >
                                 <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-4">
                                     <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                                        {editingId ? 'Edit' : 'Tambah'} {editingType === 'hero' ? 'Hero Banner' : 'Popup Item'}
+                                        {editingId ? 'Edit' : 'Tambah'} {editingType === 'hero' ? 'Hero Banner (Config)' : 'Popup Item'}
                                     </h3>
                                     <button onClick={() => setIsEditing(false)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><X size={20} /></button>
                                 </div>
 
                                 <div className="space-y-4">
+                                    {/* Edit form for popup only now really, or hero config backup */}
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Judul</label>
                                         <input
@@ -324,16 +617,6 @@ const SiteConfig = () => {
                 </AnimatePresence>
 
             </div>
-
-            <ConfirmModal
-                isOpen={!!deleteItem}
-                onClose={() => setDeleteItem(null)}
-                onConfirm={confirmDelete}
-                title="Hapus Banner?"
-                message="Apakah Anda yakin ingin menghapus banner ini? Tindakan ini tidak dapat dibatalkan setelah disimpan."
-                confirmText="Hapus"
-                variant="danger"
-            />
         </div>
     );
 };
