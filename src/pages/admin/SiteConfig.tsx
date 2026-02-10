@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { useAdmin, SiteConfig as SiteConfigType, Banner } from '../../context/AdminContext';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
-import { Trash2, Plus, Image as ImageIcon, Save, X } from 'lucide-react';
+import { Trash2, Plus, Image as ImageIcon, Save } from 'lucide-react';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import ConfirmModal from '../../components/ui/ConfirmModal';
 
@@ -16,9 +16,7 @@ const SiteConfig = () => {
     const [isDirty, setIsDirty] = useState(false);
 
     // Editor State
-    const [isEditing, setIsEditing] = useState(false);
-    const [editingType, setEditingType] = useState<'hero' | 'popup'>('hero'); // Track what we are editing
-    const [editingId, setEditingId] = useState<string | null>(null);
+
     const [tempBanner, setTempBanner] = useState<Banner>({
         id: '',
         title: '',
@@ -253,35 +251,11 @@ const SiteConfig = () => {
 
 
 
-    const handleEdit = (banner: Banner, type: 'hero' | 'popup') => {
-        setTempBanner(banner);
-        setEditingType(type);
-        setEditingId(banner.id);
-        setIsEditing(true);
-    };
 
 
 
-    const saveTempBanner = () => {
-        setDraftConfig(prev => {
-            const listKey = editingType === 'hero' ? 'heroBanners' : 'popupBanners';
-            // Defensive coding: ensure array exists
-            let newList = prev[listKey] ? [...prev[listKey]] : [];
 
-            if (editingId) {
-                // Edit existing
-                const index = newList.findIndex(b => b.id === editingId);
-                if (index !== -1) newList[index] = tempBanner;
-            } else {
-                // Add new
-                newList.push(tempBanner);
-            }
-            return { ...prev, [listKey]: newList };
-        });
 
-        setIsDirty(true);
-        setIsEditing(false);
-    };
 
     // --- Popup General Updates ---
     const updatePopupConfig = (updates: Partial<SiteConfigType>) => {
@@ -289,14 +263,7 @@ const SiteConfig = () => {
         setIsDirty(true);
     };
 
-    const gradients = [
-        "from-blue-600 to-indigo-600",
-        "from-purple-600 to-pink-600",
-        "from-orange-500 to-red-500",
-        "from-emerald-500 to-teal-600",
-        "from-slate-700 to-slate-900",
-        "from-slate-800 to-slate-900", // Dark gray
-    ];
+
 
     return (
         <div className="space-y-8 pb-20">
@@ -544,83 +511,7 @@ const SiteConfig = () => {
                 </div>
 
                 {/* --- UNIVERSAL EDIT MODAL --- */}
-                <AnimatePresence>
-                    {isEditing && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className="w-full max-w-md bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-2xl space-y-5"
-                            >
-                                <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-4">
-                                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">
-                                        {editingId ? 'Edit' : 'Tambah'} {editingType === 'hero' ? 'Hero Banner (Config)' : 'Popup Item'}
-                                    </h3>
-                                    <button onClick={() => setIsEditing(false)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"><X size={20} /></button>
-                                </div>
 
-                                <div className="space-y-4">
-                                    {/* Edit form for popup only now really, or hero config backup */}
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Judul</label>
-                                        <input
-                                            value={tempBanner.title}
-                                            onChange={e => setTempBanner({ ...tempBanner, title: e.target.value })}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                            placeholder="Masukan judul..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">Subjudul (Opsional)</label>
-                                        <input
-                                            value={tempBanner.subtitle}
-                                            onChange={e => setTempBanner({ ...tempBanner, subtitle: e.target.value })}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                            placeholder="Masukan deskripsi singkat..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase mb-1 block">URL Gambar</label>
-                                        <input
-                                            value={tempBanner.image}
-                                            onChange={e => setTempBanner({ ...tempBanner, image: e.target.value })}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Background Color</label>
-                                        <div className="flex flex-wrap gap-3">
-                                            {gradients.map(g => (
-                                                <button
-                                                    key={g}
-                                                    onClick={() => setTempBanner({ ...tempBanner, color: g })}
-                                                    className={`w-10 h-10 rounded-full bg-gradient-to-br ${g} ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 transition-all ${tempBanner.color === g ? 'ring-primary scale-110' : 'ring-transparent hover:scale-105'}`}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 flex justify-end gap-3">
-                                    <button
-                                        onClick={() => setIsEditing(false)}
-                                        className="px-4 py-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium"
-                                    >
-                                        Batal
-                                    </button>
-                                    <button
-                                        onClick={saveTempBanner}
-                                        className="px-6 py-2 bg-primary hover:bg-teal-600 text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all"
-                                    >
-                                        Simpan
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
 
             </div>
 
