@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAdmin, SiteConfig as SiteConfigType, Banner } from '../../context/AdminContext';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
-import { Trash2, Plus, Image as ImageIcon, Save, Edit2, X } from 'lucide-react';
+import { Trash2, Plus, Image as ImageIcon, Save, X } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -249,22 +249,9 @@ const SiteConfig = () => {
     };
 
     // --- Banner CRUD Helpers ---
-    const resetTempBanner = () => {
-        setTempBanner({
-            id: Math.random().toString(36).substr(2, 9),
-            title: '',
-            subtitle: '',
-            image: '',
-            color: 'from-blue-600 to-indigo-600'
-        });
-    }
 
-    const handleAdd = (type: 'hero' | 'popup') => {
-        resetTempBanner();
-        setEditingType(type);
-        setEditingId(null);
-        setIsEditing(true);
-    };
+
+
 
     const handleEdit = (banner: Banner, type: 'hero' | 'popup') => {
         setTempBanner(banner);
